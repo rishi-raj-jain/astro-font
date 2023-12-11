@@ -3,8 +3,8 @@
   "type": "module",
   "license": "MIT",
   "version": "0.0.1",
-  "types": "index.d.ts",
   "name": "astro-font",
+  "types": "index.d.ts",
   "homepage": "https://github.com/rishi-raj-jain/astro-font",
   "description": "An Astro integration to optimize local fonts inspired by @next/font",
   "exports": {
