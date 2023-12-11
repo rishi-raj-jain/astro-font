@@ -1,0 +1,16 @@
+---
+import { createFontCSS, createBaseCSS } from "./utils";
+
+export interface Props {
+  config: any[];
+}
+
+const props = Astro.props as Props;
+const urls = props.config;
+
+const baseCSS = await Promise.all(urls.map((url) => createBaseCSS(url)));
+const fallbackCSS = await Promise.all(urls.map((url) => createFontCSS(url)));
+---
+
+{baseCSS.map((content) => <style set:html={content} is:inline />)}
+{fallbackCSS.map((content) => <style set:html={content} is:inline />)}

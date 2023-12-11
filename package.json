@@ -1,0 +1,11 @@
+{
+  "name": "astro-local-font",
+  "scripts": {
+    "start": "astro --root demo dev",
+    "build": "astro --root demo build",
+    "serve": "astro --root demo preview"
+  },
+  "devDependencies": {
+    "astro": "latest"
+  }
+}

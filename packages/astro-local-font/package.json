@@ -1,0 +1,33 @@
+{
+  "private": false,
+  "type": "module",
+  "license": "MIT",
+  "version": "0.0.1",
+  "name": "astro-local-font",
+  "types": "index.d.ts",
+  "homepage": "https://github.com/rishi-raj-jain/astro-local-font",
+  "description": "An Astro integration to optimize local fonts inspired by @next/font",
+  "exports": {
+    ".": "./index.js",
+    "./utils": "./utils.ts",
+    "./AstroFont": "./AstroFont.astro"
+  },
+  "files": [
+    "utils.ts",
+    "index.js",
+    "index.d.ts",
+    "AstroFont.astro",
+    "../../README.md"
+  ],
+  "keywords": [
+    "astro-component",
+    "seo",
+    "performance",
+    "perf",
+    "google-fonts",
+    "fonts"
+  ],
+  "dependencies": {
+    "fontkit": "latest"
+  }
+}

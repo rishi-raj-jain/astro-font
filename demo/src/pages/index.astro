@@ -1,0 +1,38 @@
+---
+import { join } from "path";
+import { AstroFont } from "astro-local-font";
+
+const getFontForSrc = (fontname: string, weight: string, style: string) => {
+  return {
+    style,
+    weight,
+    path: join(process.cwd(), "demo", "public", "fonts", fontname),
+  };
+};
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Welcome to Astro</title>
+    <AstroFont
+      config={[
+        {
+          name: "Afacad",
+          basePath: join(process.cwd(), "demo", "public"),
+          src: [
+            getFontForSrc("Afacad-Bold.ttf", "700", "bold"),
+            getFontForSrc("Afacad-Medium.ttf", "500", "medium"),
+            getFontForSrc("Afacad-Regular.ttf", "400", "normal"),
+          ],
+          preload: true,
+          display: "swap",
+          selector: "body",
+          fallback: "sans-serif",
+        },
+      ]}
+    />
+  </head>
+  <body>Hello world!</body>
+</html>
