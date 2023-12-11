@@ -1,5 +1,5 @@
 {
-  "name": "astro-local-font-demo",
+  "name": "astro-font-demo",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -10,6 +10,6 @@
     "astro": "latest"
   },
   "dependencies": {
-    "astro-local-font": "workspace:*"
+    "astro-font": "workspace:*"
   }
 }

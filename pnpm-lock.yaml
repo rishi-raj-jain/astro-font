@@ -14,15 +14,15 @@ importers:
 
   demo:
     dependencies:
-      astro-local-font:
+      astro-font:
         specifier: workspace:*
-        version: link:../packages/astro-local-font
+        version: link:../packages/astro-font
     devDependencies:
       astro:
         specifier: latest
         version: 4.0.4
 
-  packages/astro-local-font:
+  packages/astro-font:
     dependencies:
       fontkit:
         specifier: latest

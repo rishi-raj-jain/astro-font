@@ -1,5 +1,5 @@
 {
-  "name": "astro-local-font",
+  "name": "astro-font",
   "scripts": {
     "start": "astro --root demo dev",
     "build": "astro --root demo build",
