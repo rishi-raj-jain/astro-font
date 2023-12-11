@@ -2,7 +2,7 @@
   "private": false,
   "type": "module",
   "license": "MIT",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "types": "index.d.ts",
   "name": "astro-local-font",
   "homepage": "https://github.com/rishi-raj-jain/astro-local-font",
@@ -32,6 +32,7 @@
     "fonts"
   ],
   "dependencies": {
-    "fontkit": "latest"
+    "fontkit": "latest",
+    "node-fetch": "^3.3.2"
   }
 }

@@ -22,7 +22,11 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
           name: "Afacad",
           basePath: join(process.cwd(), "demo", "public"),
           src: [
-            getFontForSrc("Afacad-Bold.ttf", "700", "bold"),
+            {
+              style: 'bold',
+              weight: '700',
+              path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
+            },
             getFontForSrc("Afacad-Medium.ttf", "500", "medium"),
             getFontForSrc("Afacad-Regular.ttf", "400", "normal"),
           ],
