@@ -1,12 +1,10 @@
 {
-  "private": false,
-  "type": "module",
   "license": "MIT",
+  "type": "module",
+  "private": false,
   "version": "0.0.1",
   "name": "astro-font",
   "types": "index.d.ts",
-  "homepage": "https://github.com/rishi-raj-jain/astro-font",
-  "description": "An Astro integration to optimize local fonts inspired by @next/font",
   "exports": {
     ".": "./index.js",
     "./font": "./font.ts",
@@ -34,5 +32,7 @@
   "dependencies": {
     "fontkit": "latest",
     "node-fetch": "^3.3.2"
-  }
+  },
+  "homepage": "https://github.com/rishi-raj-jain/astro-font",
+  "description": "An Astro integration to optimize Local & Google fonts inspired by @next/font"
 }

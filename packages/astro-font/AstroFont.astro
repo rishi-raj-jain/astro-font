@@ -2,14 +2,25 @@
 import { createFontCSS, createBaseCSS } from "./utils";
 
 export interface Props {
-  config: any[];
+  config: {
+    name: string;
+    display: string;
+    preload: boolean;
+    selector: string;
+    basePath: string;
+    fallback: 'sans' | 'sans-serif';
+    src: {
+      path: string;
+      style: string;
+      weight: string | number;
+    }[]
+  }[];
 }
 
-const props = Astro.props as Props;
-const urls = props.config;
+const { config } = Astro.props as Props;
 
-const baseCSS = await Promise.all(urls.map((url) => createBaseCSS(url)));
-const fallbackCSS = await Promise.all(urls.map((url) => createFontCSS(url)));
+const baseCSS = await Promise.all(config.map((entry) => createBaseCSS(entry)));
+const fallbackCSS = await Promise.all(config.map((entry) => createFontCSS(entry)));
 ---
 
 {baseCSS.map((content) => <style set:html={content} is:inline />)}
