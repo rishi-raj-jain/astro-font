@@ -6,6 +6,7 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
   return {
     style,
     weight,
+    preload: false,
     path: join(process.cwd(), "demo", "public", "fonts", fontname),
   };
 };
@@ -23,6 +24,7 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
           basePath: join(process.cwd(), "demo", "public"),
           src: [
             {
+              preload: true,
               style: 'bold',
               weight: '700',
               path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'

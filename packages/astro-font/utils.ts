@@ -14,6 +14,7 @@ interface Config {
   src: {
     path: string;
     style: string;
+    preload?: boolean;
     weight: string | number;
   }[];
 }
@@ -52,7 +53,7 @@ async function getFallbackFont(fontCollection: Config) {
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  return fontCollection.src.map(i => getRelativePath(fontCollection.basePath, i.path))
+  return fontCollection.src.filter(i => i.preload !== false).map(i => getRelativePath(fontCollection.basePath, i.path))
 }
 
 export function createBaseCSS(fontCollection: Config): string[] {
