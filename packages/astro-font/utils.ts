@@ -7,9 +7,9 @@ import { pickFontFileForFallbackGeneration } from './fallback'
 interface Config {
   name: string;
   display: string;
-  preload: boolean;
   selector: string;
   basePath: string;
+  preload?: boolean;
   fallback: "sans" | "sans-serif";
   src: {
     path: string;
