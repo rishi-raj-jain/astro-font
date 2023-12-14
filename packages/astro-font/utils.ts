@@ -4,7 +4,30 @@ import { openSync, create } from 'fontkit'
 import { getFallbackMetricsFromFontFile } from './font'
 import { pickFontFileForFallbackGeneration } from './fallback'
 
-async function getFallbackFont(fontCollection) {
+interface Config {
+  name: string;
+  display: string;
+  preload: boolean;
+  selector: string;
+  basePath: string;
+  fallback: "sans" | "sans-serif";
+  src: {
+    path: string;
+    style: string;
+    weight: string | number;
+  }[];
+}
+
+export interface Props {
+  config: Config[];
+}
+
+export function getRelativePath(from: string, to: string) {
+  if (to.includes('https')) return to
+  return '/' + relative(from, to)
+}
+
+async function getFallbackFont(fontCollection: Config) {
   const fonts: any[] = []
   for (let i of fontCollection.src) {
     if (i.path.includes('https://')) {
@@ -28,11 +51,15 @@ async function getFallbackFont(fontCollection) {
   return getFallbackMetricsFromFontFile(metadata, fontCollection.fallback);
 }
 
-export function createBaseCSS(fontCollection): string {
-  return fontCollection.src.map(i => `@font-face{font-style: ${i.style}; font-weight: ${i.weight}; font-display: ${fontCollection.display}; font-family: ${fontCollection.name}; src: url(/${relative(fontCollection.basePath, i.path)});}`)
+export function createPreloads(fontCollection: Config): string[] {
+  return fontCollection.src.map(i => getRelativePath(fontCollection.basePath, i.path))
 }
 
-export async function createFontCSS(fontCollection): Promise<string> {
+export function createBaseCSS(fontCollection: Config): string[] {
+  return fontCollection.src.map(i => `@font-face{font-style: ${i.style}; font-weight: ${i.weight}; font-display: ${fontCollection.display}; font-family: ${fontCollection.name}; src: url(${getRelativePath(fontCollection.basePath, i.path)});}`)
+}
+
+export async function createFontCSS(fontCollection: Config): Promise<string> {
   const fallbackName = '_font_fallback_' + new Date().getTime()
   const fallbackFont = await getFallbackFont(fontCollection)
   return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};}@font-face{font-family: ${fallbackName}; size-adjust: ${fallbackFont.sizeAdjust}; src: local('${fallbackFont.fallbackFont}'); ascent-override: ${fallbackFont.ascentOverride}; descent-override: ${fallbackFont.descentOverride}; line-gap-override: ${fallbackFont.lineGapOverride};}`

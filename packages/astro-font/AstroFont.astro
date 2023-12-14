@@ -1,27 +1,29 @@
 ---
-import { createFontCSS, createBaseCSS } from "./utils";
-
-export interface Props {
-  config: {
-    name: string;
-    display: string;
-    preload: boolean;
-    selector: string;
-    basePath: string;
-    fallback: 'sans' | 'sans-serif';
-    src: {
-      path: string;
-      style: string;
-      weight: string | number;
-    }[]
-  }[];
-}
+import type { Props } from "./utils";
+import { createFontCSS, createBaseCSS, createPreloads } from "./utils";
 
 const { config } = Astro.props as Props;
 
-const baseCSS = await Promise.all(config.map((entry) => createBaseCSS(entry)));
-const fallbackCSS = await Promise.all(config.map((entry) => createFontCSS(entry)));
+const preloads = config
+  .filter((i) => i.preload)
+  .map((entry) => createPreloads(entry))
+  .flat();
+const baseCSS = config.map((entry) => createBaseCSS(entry)).flat();
+const fallbackCSS = (
+  await Promise.all(config.map((entry) => createFontCSS(entry)))
+).flat();
 ---
 
+{
+  preloads.map((content) => (
+    <link
+      as="font"
+      crossorigin
+      rel="preload"
+      href={content}
+      type="font/woff2"
+    />
+  ))
+}
 {baseCSS.map((content) => <style set:html={content} is:inline />)}
 {fallbackCSS.map((content) => <style set:html={content} is:inline />)}
