@@ -29,6 +29,22 @@ export function getRelativePath(from: string, to: string) {
   return '/' + relative(from, to)
 }
 
+const extToFormat = {
+  woff: 'woff',
+  woff2: 'woff2',
+  ttf: 'truetype',
+  otf: 'opentype',
+  eot: 'embedded-opentype',
+}
+
+export function getFontType(src: string) {
+  const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
+  if (!ext) {
+    throw Error(`Unexpected file \`${src}\``)
+  }
+  return extToFormat[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf'];
+}
+
 async function getFallbackFont(fontCollection: Config) {
   const fonts: any[] = []
   for (let i of fontCollection.src) {

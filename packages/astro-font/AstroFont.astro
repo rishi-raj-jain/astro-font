@@ -1,6 +1,11 @@
 ---
 import type { Props } from "./utils";
-import { createFontCSS, createBaseCSS, createPreloads } from "./utils";
+import {
+  getFontType,
+  createFontCSS,
+  createBaseCSS,
+  createPreloads,
+} from "./utils";
 
 const { config } = Astro.props as Props;
 
@@ -21,7 +26,7 @@ const fallbackCSS = (
       crossorigin
       rel="preload"
       href={content}
-      type="font/woff2"
+      type={"font/" + getFontType(content)}
     />
   ))
 }
