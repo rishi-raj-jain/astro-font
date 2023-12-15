@@ -25,14 +25,6 @@ Automatically optimize any Google Font. To use the font in all your pages, add i
 ```astro
 ---
 import { AstroFont } from "astro-font";
-
-const getFontForSrc = (fontname: string, weight: string, style: string) => {
-  return {
-    style,
-    weight,
-    path: join(process.cwd(), "public", "fonts", fontname),
-  };
-};
 ---
 
 <head>
@@ -40,7 +32,6 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
       config={[
         {
           name: "Afacad",
-          basePath: join(process.cwd(), "public"),
           src: [
             {
               style: 'bold',
@@ -62,13 +53,7 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
 
 ```astro
 ---
-const getFontForSrc = (fontname: string, weight: string, style: string) => {
-  return {
-    style,
-    weight,
-    path: join(process.cwd(), "public", "fonts", fontname),
-  };
-};
+import { AstroFont } from "astro-font";
 ---
 
 <head>
@@ -76,12 +61,19 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
       config={[
         {
           name: "Afacad",
-          basePath: join(process.cwd(), "public"),
           src: [
-            getFontForSrc("Afacad-Medium.ttf", "500", "medium"),
-            getFontForSrc("Afacad-Regular.ttf", "400", "normal"),
+            {
+              style: 'normal',
+              weight: '400',
+              path: './public/fonts/Afacad-Regular.ttf'
+            },
+            {
+              style: 'medium',
+              weight: '500',
+              path: './public/fonts/Afacad-Medium.ttf'
+            },
           ],
-          preload: true,
+          preload: false,
           display: "swap",
           selector: "body",
           fallback: "sans-serif",
@@ -99,13 +91,7 @@ Just extend the array of the config to contain the new collection of the fonts:
 
 ```astro
 ---
-const getFontForSrc = (fontname: string, weight: string, style: string) => {
-  return {
-    style,
-    weight,
-    path: join(process.cwd(), "public", "fonts", fontname),
-  };
-};
+import { AstroFont } from "astro-font";
 ---
 
 <head>
@@ -113,15 +99,12 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
       config={[
         {
           name: "Afacad",
-          basePath: join(process.cwd(), "public"),
           src: [
             {
               style: 'bold',
               weight: '700',
               path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
             },
-            getFontForSrc("Afacad-Medium.ttf", "500", "medium"),
-            getFontForSrc("Afacad-Regular.ttf", "400", "normal"),
           ],
           preload: true,
           display: "swap",
@@ -130,20 +113,17 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
         },
         {
           name: "Inter",
-          basePath: join(process.cwd(), "public"),
           src: [
             {
-              style: 'bold',
-              weight: '700',
-              path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
-            },
-            getFontForSrc("Inter-Medium.ttf", "500", "medium"),
-            getFontForSrc("Inter-Regular.ttf", "400", "normal"),
+              weight: '400',
+              style: 'normal',
+              path: './public/fonts/Inter-Regular.ttf'
+            }
           ],
           preload: true,
           display: "swap",
-          selector: "body",
-          fallback: "sans-serif",
+          selector: "body > span",
+          fallback: "serif",
         },
       ]}
     />

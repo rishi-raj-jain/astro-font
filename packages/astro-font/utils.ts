@@ -8,14 +8,15 @@ interface Config {
   name: string;
   display: string;
   selector: string;
-  basePath: string;
+  basePath?: string;
   preload?: boolean;
-  fallback: "sans" | "sans-serif";
+  fallback: "serif" | "sans-serif";
   src: {
     path: string;
     style: string;
     preload?: boolean;
     weight: string | number;
+    css?: { [property: string]: string };
   }[];
 }
 
@@ -53,11 +54,16 @@ async function getFallbackFont(fontCollection: Config) {
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  return fontCollection.src.filter(i => i.preload !== false).map(i => getRelativePath(fontCollection.basePath, i.path))
+  return fontCollection.src.filter(i => i.preload !== false).map(i => getRelativePath(fontCollection.basePath || './public', i.path))
 }
 
 export function createBaseCSS(fontCollection: Config): string[] {
-  return fontCollection.src.map(i => `@font-face{font-style: ${i.style}; font-weight: ${i.weight}; font-display: ${fontCollection.display}; font-family: ${fontCollection.name}; src: url(${getRelativePath(fontCollection.basePath, i.path)});}`)
+  return fontCollection.src.map((i) => {
+    const cssProperties = Object.entries(i.css || {})
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(";");
+    return `@font-face {${cssProperties} font-style: ${i.style}; font-weight: ${i.weight}; font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`;
+  });
 }
 
 export async function createFontCSS(fontCollection: Config): Promise<string> {

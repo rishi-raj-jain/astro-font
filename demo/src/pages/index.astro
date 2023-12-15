@@ -1,15 +1,5 @@
 ---
-import { join } from "path";
 import { AstroFont } from "astro-font";
-
-const getFontForSrc = (fontname: string, weight: string, style: string) => {
-  return {
-    style,
-    weight,
-    preload: false,
-    path: join(process.cwd(), "demo", "public", "fonts", fontname),
-  };
-};
 ---
 
 <html lang="en">
@@ -20,25 +10,46 @@ const getFontForSrc = (fontname: string, weight: string, style: string) => {
     <AstroFont
       config={[
         {
+          // font-name to be used when generating the CSS
           name: "Afacad",
-          basePath: join(process.cwd(), "demo", "public"),
+          // Optional (but needs to be set for workspaces as the project's basePath+public dir)
+          basePath: "./demo/public",
           src: [
             {
+              style: "bold",
+              weight: "700",
+              // (Optional) but ensures that it is preloaded
               preload: true,
-              style: 'bold',
-              weight: '700',
-              path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
+              path: "https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2",
             },
-            getFontForSrc("Afacad-Medium.ttf", "500", "medium"),
-            getFontForSrc("Afacad-Regular.ttf", "400", "normal"),
+            {
+              weight: "500",
+              style: "medium",
+              // (Optional) but does not preload this specifically
+              preload: false,
+              path: "./demo/public/fonts/Afacad-Medium.ttf",
+            },
+            {
+              weight: "400",
+              style: "normal",
+              path: "./demo/public/fonts/Afacad-Regular.ttf",
+              // Some other properties to be used with the this particular font
+              css: {
+                'font-feature-settings': 'normal'
+              }
+            },
           ],
+          // Whether to preload the font in the output HTML
           preload: true,
+          // Whether to swap the display
           display: "swap",
+          // Where to apply this whole font (using CSS selector)
           selector: "body",
+          // What kind of fallback to use: serif or sans-serif
           fallback: "sans-serif",
         },
       ]}
     />
   </head>
-  <body>Hello world!</body>
+  <body><span>Hello world!</span></body>
 </html>
