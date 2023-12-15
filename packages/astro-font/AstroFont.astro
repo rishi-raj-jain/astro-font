@@ -13,7 +13,7 @@ const preloads = config
   .filter((i) => i.preload)
   .map((entry) => createPreloads(entry))
   .flat();
-const baseCSS = config.map((entry) => createBaseCSS(entry)).flat();
+const baseCSS = await Promise.all(config.map((entry) => createBaseCSS(entry)));
 const fallbackCSS = (
   await Promise.all(config.map((entry) => createFontCSS(entry)))
 ).flat();

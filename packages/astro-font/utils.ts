@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
-import { relative } from 'path'
+import { relative } from 'node:path'
+import { readFileSync } from 'node:fs'
 import { openSync, create } from 'fontkit'
 import { getFallbackMetricsFromFontFile } from './font'
 import { pickFontFileForFallbackGeneration } from './fallback'
@@ -14,6 +15,7 @@ interface Config {
   src: {
     path: string;
     style: string;
+    inline?: boolean;
     preload?: boolean;
     weight: string | number;
     css?: { [property: string]: string };
@@ -45,6 +47,18 @@ export function getFontType(src: string) {
   return extToFormat[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf'];
 }
 
+async function getFontBuffer(path: string) {
+  let resp: Buffer
+  if (path.includes('https://')) {
+    let tmp = await fetch(path)
+    resp = Buffer.from(await tmp.arrayBuffer())
+  }
+  else {
+    resp = readFileSync(path)
+  }
+  return resp.toString('base64')
+}
+
 async function getFallbackFont(fontCollection: Config) {
   const fonts: any[] = []
   for (let i of fontCollection.src) {
@@ -70,14 +84,18 @@ async function getFallbackFont(fontCollection: Config) {
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  return fontCollection.src.filter(i => i.preload !== false).map(i => getRelativePath(fontCollection.basePath || './public', i.path))
+  return fontCollection.src.filter(i => i.preload !== false && i.inline !== true).map(i => getRelativePath(fontCollection.basePath || './public', i.path))
 }
 
-export function createBaseCSS(fontCollection: Config): string[] {
-  return fontCollection.src.map((i) => {
+export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
+  return fontCollection.src.map(async (i) => {
     const cssProperties = Object.entries(i.css || {})
       .map(([key, value]) => `${key}: ${value}`)
       .join(";");
+    if (i.inline) {
+      const res = await getFontBuffer(i.path)
+      return `@font-face {${cssProperties} font-style: ${i.style}; font-weight: ${i.weight}; font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(data:${getFontType(i.path)};base64,${res}) format('${getFontType(i.path)}');}`
+    }
     return `@font-face {${cssProperties} font-style: ${i.style}; font-weight: ${i.weight}; font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`;
   });
 }
