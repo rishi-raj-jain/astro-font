@@ -31,6 +31,22 @@ export function getRelativePath(from: string, to: string) {
   return '/' + relative(from, to)
 }
 
+const extToPreload = {
+  woff: 'font/woff',
+  woff2: 'font/woff2',
+  ttf: 'font/ttf',
+  otf: 'font/otf',
+  eot: 'application/vnd.ms-fontobject',
+}
+
+export function getPreloadType(src: string) {
+  const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
+  if (!ext) {
+    throw Error(`Unexpected file \`${src}\``)
+  }
+  return extToPreload[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf'];
+}
+
 const extToFormat = {
   woff: 'woff',
   woff2: 'woff2',
