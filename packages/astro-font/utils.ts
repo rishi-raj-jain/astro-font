@@ -17,7 +17,7 @@ interface Config {
     style: string;
     inline?: boolean;
     preload?: boolean;
-    weight: string | number;
+    weight?: string | number;
     css?: { [property: string]: string };
   }[];
 }
@@ -108,11 +108,15 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
     const cssProperties = Object.entries(i.css || {})
       .map(([key, value]) => `${key}: ${value}`)
       .join(";");
+    let fontWeightCSS = ""
+    if (i.weight) {
+      fontWeightCSS = ' font-weight: ' + i.weight + ';'
+    }
     if (i.inline) {
       const res = await getFontBuffer(i.path)
-      return `@font-face {${cssProperties} font-style: ${i.style}; font-weight: ${i.weight}; font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(data:${getFontType(i.path)};base64,${res}) format('${getFontType(i.path)}');}`
+      return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(data:${getFontType(i.path)};base64,${res}) format('${getFontType(i.path)}');}`
     }
-    return `@font-face {${cssProperties} font-style: ${i.style}; font-weight: ${i.weight}; font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`;
+    return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`;
   });
 }
 
