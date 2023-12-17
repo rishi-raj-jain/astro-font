@@ -102,7 +102,10 @@ export async function generateFonts(fontCollection: Config[]) {
   duplicatedCollection.forEach((config, i) => {
     if (!config.notFetch) {
       config.src.forEach((src, j) => {
-        indicesMatrix.push([i, j, src.path, config.basePath || './public']);
+        const name = extractFileNameFromPath(src.path)
+        const generatedFolderPath = join(config.basePath || './public', '__astro_font_generated__')
+        const savedName = join(generatedFolderPath, name)
+        if (!existsSync(savedName)) indicesMatrix.push([i, j, src.path, config.basePath || './public']);
       });
     }
   });
