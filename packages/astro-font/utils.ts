@@ -102,20 +102,15 @@ export async function generateFonts(fontCollection: Config[]) {
   duplicatedCollection.forEach((config, i) => {
     if (!config.notFetch) {
       config.src.forEach((src, j) => {
-        const name = extractFileNameFromPath(src.path)
-        const generatedFolderPath = join(config.basePath || './public', '__astro_font_generated__')
-        const savedName = join(generatedFolderPath, name)
-        if (!existsSync(savedName)) indicesMatrix.push([i, j, src.path, config.basePath || './public']);
+        indicesMatrix.push([i, j, src.path, config.basePath || './public']);
       });
     }
   });
   if (indicesMatrix.length > 0) {
-    console.log(`[astro-font] ▶ Generating local fonts`)
     const tmp = await Promise.all(indicesMatrix.map(createFontFiles))
     tmp.forEach(i => {
       duplicatedCollection[i[0]]['src'][i[1]]['path'] = i[2]
     })
-    console.log(`[astro-font] ▶ Complete!`)
   }
   return duplicatedCollection
 }
