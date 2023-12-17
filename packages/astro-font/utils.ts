@@ -12,6 +12,7 @@ interface Config {
   selector: string;
   basePath?: string;
   preload?: boolean;
+  notFetch?: boolean;
   fallback: "serif" | "sans-serif";
   src: {
     path: string;
@@ -99,9 +100,11 @@ export async function generateFonts(fontCollection: Config[]) {
   const duplicatedCollection = [...fontCollection]
   const indicesMatrix: [number, number, string, string][] = [];
   duplicatedCollection.forEach((config, i) => {
-    config.src.forEach((src, j) => {
-      indicesMatrix.push([i, j, src.path, config.basePath || './public']);
-    });
+    if (!config.notFetch) {
+      config.src.forEach((src, j) => {
+        indicesMatrix.push([i, j, src.path, config.basePath || './public']);
+      });
+    }
   });
   if (indicesMatrix.length > 0) {
     console.log(`[astro-font] ▶ Generating local fonts`)
