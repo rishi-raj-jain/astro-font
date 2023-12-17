@@ -1,9 +1,10 @@
 import fetch from 'node-fetch'
-import { relative } from 'node:path'
-import { readFileSync } from 'node:fs'
+import { Buffer } from 'node:buffer'
+import { relative, join } from 'node:path'
 import { openSync, create } from 'fontkit'
 import { getFallbackMetricsFromFontFile } from './font'
 import { pickFontFileForFallbackGeneration } from './fallback'
+import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs'
 
 interface Config {
   name: string;
@@ -72,7 +73,45 @@ async function getFontBuffer(path: string) {
   else {
     resp = readFileSync(path)
   }
-  return resp.toString('base64')
+  return resp
+}
+
+function extractFileNameFromPath(path: string): string {
+  const lastSlashIndex = path.lastIndexOf('/')
+  if (lastSlashIndex !== -1) return path.substring(lastSlashIndex + 1)
+  return path
+}
+
+async function createFontFiles(fontPath: [number, number, string, string]) {
+  const [i, j, path, basePath] = fontPath;
+  const name = extractFileNameFromPath(path)
+  const generatedFolderPath = join(basePath, '__astro_font_generated__')
+  const savedName = join(generatedFolderPath, name)
+  if (existsSync(savedName)) return [i, j, savedName]
+  const fontBuffer = await getFontBuffer(path);
+  if (!existsSync(generatedFolderPath)) mkdirSync(generatedFolderPath);
+  console.log(`[astro-font] ▶ Generated ${savedName}`)
+  writeFileSync(savedName, fontBuffer);
+  return [i, j, savedName]
+}
+
+export async function generateFonts(fontCollection: Config[]) {
+  const duplicatedCollection = [...fontCollection]
+  const indicesMatrix: [number, number, string, string][] = [];
+  duplicatedCollection.forEach((config, i) => {
+    config.src.forEach((src, j) => {
+      indicesMatrix.push([i, j, src.path, config.basePath || './public']);
+    });
+  });
+  if (indicesMatrix.length > 0) {
+    console.log(`[astro-font] ▶ Generating local fonts`)
+    const tmp = await Promise.all(indicesMatrix.map(createFontFiles))
+    tmp.forEach(i => {
+      duplicatedCollection[i[0]]['src'][i[1]]['path'] = i[2]
+    })
+    console.log(`[astro-font] ▶ Complete!`)
+  }
+  return duplicatedCollection
 }
 
 async function getFallbackFont(fontCollection: Config) {
@@ -113,7 +152,7 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
       fontWeightCSS = ' font-weight: ' + i.weight + ';'
     }
     if (i.inline) {
-      const res = await getFontBuffer(i.path)
+      const res = (await getFontBuffer(i.path)).toString('base64')
       return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(data:${getFontType(i.path)};base64,${res}) format('${getFontType(i.path)}');}`
     }
     return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`;

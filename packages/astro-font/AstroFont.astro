@@ -1,6 +1,7 @@
 ---
 import type { Props } from "./utils";
 import {
+  generateFonts,
   createFontCSS,
   createBaseCSS,
   createPreloads,
@@ -9,13 +10,17 @@ import {
 
 const { config } = Astro.props as Props;
 
-const preloads = config
+const config_1 = await generateFonts(config);
+
+const preloads = config_1
   .filter((i) => i.preload)
   .map((entry) => createPreloads(entry))
   .flat();
-const baseCSS = await Promise.all(config.map((entry) => createBaseCSS(entry)));
+const baseCSS = await Promise.all(
+  config_1.map((entry) => createBaseCSS(entry))
+);
 const fallbackCSS = (
-  await Promise.all(config.map((entry) => createFontCSS(entry)))
+  await Promise.all(config_1.map((entry) => createFontCSS(entry)))
 ).flat();
 ---
 
