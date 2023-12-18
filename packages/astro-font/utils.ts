@@ -4,25 +4,29 @@ import { relative, join } from 'node:path'
 import { getFallbackMetricsFromFontFile } from './font.ts'
 import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
+interface Record {
+  [property: string]: string
+}
+
 interface Config {
-  name: string;
-  display: string;
-  selector: string;
-  basePath?: string;
-  preload?: boolean;
-  notFetch?: boolean;
-  fallback: "serif" | "sans-serif";
+  name: string
+  display: string
+  selector: string
+  basePath?: string
+  preload?: boolean
+  notFetch?: boolean
+  fallback: 'serif' | 'sans-serif'
   src: {
-    path: string;
-    style: string;
-    preload?: boolean;
-    weight?: string | number;
-    css?: { [property: string]: string };
-  }[];
+    path: string
+    style: string
+    preload?: boolean
+    weight?: string | number
+    css?: Record
+  }[]
 }
 
 export interface Props {
-  config: Config[];
+  config: Config[]
 }
 
 export function getRelativePath(from: string, to: string) {
@@ -38,14 +42,6 @@ const extToPreload = {
   eot: 'application/vnd.ms-fontobject',
 }
 
-export function getPreloadType(src: string) {
-  const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
-  if (!ext) {
-    throw Error(`Unexpected file \`${src}\``)
-  }
-  return extToPreload[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf'];
-}
-
 const extToFormat = {
   woff: 'woff',
   woff2: 'woff2',
@@ -55,19 +51,25 @@ const extToFormat = {
 }
 
 async function getFS() {
-  let fs;
+  let fs
   try {
-    fs = await import('node:fs');
-  } catch (error) { }
+    fs = await import('node:fs')
+  } catch (error) {}
   return fs
+}
+
+export function getPreloadType(src: string) {
+  const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
+  if (!ext) 
+    throw Error(`Unexpected file \`${src}\``)
+  return extToPreload[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf']
 }
 
 export function getFontType(src: string) {
   const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
-  if (!ext) {
+  if (!ext) 
     throw Error(`Unexpected file \`${src}\``)
-  }
-  return extToFormat[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf'];
+  return extToFormat[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf']
 }
 
 async function getFontBuffer(path: string): Promise<Buffer | undefined> {
@@ -75,8 +77,7 @@ async function getFontBuffer(path: string): Promise<Buffer | undefined> {
   if (path.includes('https://')) {
     let tmp = await fetch(path)
     return Buffer.from(await tmp.arrayBuffer())
-  }
-  else {
+  } else {
     if (fs) {
       return fs.readFileSync(path)
     }
@@ -91,17 +92,17 @@ function extractFileNameFromPath(path: string): string {
 
 async function createFontFiles(fontPath: [number, number, string, string]): Promise<[number, number, string]> {
   const fs = await getFS()
-  const [i, j, path, basePath] = fontPath;
+  const [i, j, path, basePath] = fontPath
   if (!fs) return [i, j, path]
   const name = extractFileNameFromPath(path)
   const generatedFolderPath = join(basePath, '__astro_font_generated__')
   const savedName = join(generatedFolderPath, name)
   if (fs.existsSync(savedName)) return [i, j, savedName]
-  const fontBuffer = await getFontBuffer(path);
-  if (!fs.existsSync(generatedFolderPath)) fs.mkdirSync(generatedFolderPath);
+  const fontBuffer = await getFontBuffer(path)
+  if (!fs.existsSync(generatedFolderPath)) fs.mkdirSync(generatedFolderPath)
   if (fontBuffer) {
     console.log(`[astro-font] ▶ Generated ${savedName}`)
-    fs.writeFileSync(savedName, fontBuffer);
+    fs.writeFileSync(savedName, fontBuffer)
     return [i, j, savedName]
   }
   return [i, j, path]
@@ -109,17 +110,17 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
 
 export async function generateFonts(fontCollection: Config[]) {
   const duplicatedCollection = [...fontCollection]
-  const indicesMatrix: [number, number, string, string][] = [];
+  const indicesMatrix: [number, number, string, string][] = []
   duplicatedCollection.forEach((config, i) => {
     if (!config.notFetch) {
       config.src.forEach((src, j) => {
-        indicesMatrix.push([i, j, src.path, config.basePath || './public']);
-      });
+        indicesMatrix.push([i, j, src.path, config.basePath || './public'])
+      })
     }
-  });
+  })
   if (indicesMatrix.length > 0) {
     const tmp = await Promise.all(indicesMatrix.map(createFontFiles))
-    tmp.forEach(i => {
+    tmp.forEach((i) => {
       duplicatedCollection[i[0]]['src'][i[1]]['path'] = i[2]
     })
   }
@@ -129,44 +130,49 @@ export async function generateFonts(fontCollection: Config[]) {
 async function getFallbackFont(fontCollection: Config) {
   const fonts: any[] = []
   const fs = await getFS()
-  await Promise.all(fontCollection.src.map(i => 
-    getFontBuffer(i.path).then(res => {
-      if (res) {
-        fonts.push({
-          style: i.style,
-          weight: i.weight,
-          metadata: create(res),
-        })
-      }
-    })
-  ))
+  await Promise.all(
+    fontCollection.src.map((i) =>
+      getFontBuffer(i.path).then((res) => {
+        if (res) {
+          fonts.push({
+            style: i.style,
+            weight: i.weight,
+            metadata: create(res),
+          })
+        }
+      }),
+    ),
+  )
   if (fs) {
-    const { metadata } = pickFontFileForFallbackGeneration(fonts);
-    return getFallbackMetricsFromFontFile(metadata, fontCollection.fallback);
+    const { metadata } = pickFontFileForFallbackGeneration(fonts)
+    return getFallbackMetricsFromFontFile(metadata, fontCollection.fallback)
   }
   return
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  return fontCollection.src.filter(i => i.preload !== false).map(i => getRelativePath(fontCollection.basePath || './public', i.path))
+  return fontCollection.src.filter((i) => i.preload !== false).map((i) => getRelativePath(fontCollection.basePath || './public', i.path))
 }
 
 export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
   return fontCollection.src.map((i) => {
     const cssProperties = Object.entries(i.css || {})
       .map(([key, value]) => `${key}: ${value}`)
-      .join(";");
-    let fontWeightCSS = ""
+      .join(';')
+    let fontWeightCSS = ''
     if (i.weight) {
       fontWeightCSS = ' font-weight: ' + i.weight + ';'
     }
-    return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`;
-  });
+    return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${
+      fontCollection.display
+    }; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`
+  })
 }
 
 export async function createFontCSS(fontCollection: Config): Promise<string> {
   const fallbackName = '_font_fallback_' + new Date().getTime()
   const fallbackFont = await getFallbackFont(fontCollection)
-  if (fallbackFont) return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};} @font-face{font-family: ${fallbackName}; size-adjust: ${fallbackFont.sizeAdjust}; src: local('${fallbackFont.fallbackFont}'); ascent-override: ${fallbackFont.ascentOverride}; descent-override: ${fallbackFont.descentOverride}; line-gap-override: ${fallbackFont.lineGapOverride};}`
+  if (fallbackFont)
+    return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};} @font-face{font-family: ${fallbackName}; size-adjust: ${fallbackFont.sizeAdjust}; src: local('${fallbackFont.fallbackFont}'); ascent-override: ${fallbackFont.ascentOverride}; descent-override: ${fallbackFont.descentOverride}; line-gap-override: ${fallbackFont.lineGapOverride};}`
   return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fontCollection.fallback};}`
 }

@@ -1,1 +1,1 @@
-export { default as AstroFont } from "./AstroFont.astro";
+export { default as AstroFont } from './AstroFont.astro'
