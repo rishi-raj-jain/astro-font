@@ -2,22 +2,24 @@
   "license": "MIT",
   "type": "module",
   "private": false,
-  "version": "0.0.16",
+  "version": "0.0.27",
   "name": "astro-font",
   "types": "index.d.ts",
   "exports": {
-    ".": "./index.js",
-    "./font": "./font.ts",
-    "./utils": "./utils.ts",
-    "./fallback": "./fallback.ts",
-    "./AstroFont": "./AstroFont.astro"
+    "./AstroFont": "./AstroFont.astro",
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./utils": {
+      "types": "./dist/util.d.ts",
+      "default": "./dist/util.js"
+    }
   },
   "files": [
-    "font.ts",
-    "utils.ts",
+    "dist",
     "index.js",
     "index.d.ts",
-    "fallback.ts",
     "AstroFont.astro",
     "../../README.md"
   ],
@@ -30,9 +32,18 @@
     "fonts"
   ],
   "dependencies": {
-    "fontkit": "latest",
+    "fontkit": "^2.0.2",
     "node-fetch": "^3.3.2"
   },
   "homepage": "https://github.com/rishi-raj-jain/astro-font",
-  "description": "An Astro integration to optimize Local & Google fonts inspired by @next/font"
+  "description": "An Astro integration to optimize Local & Google fonts inspired by @next/font",
+  "devDependencies": {
+    "@types/fontkit": "^2.0.6",
+    "@types/node": "^20.10.5",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsup"
+  }
 }

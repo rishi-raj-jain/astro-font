@@ -1,10 +1,8 @@
-import fetch from 'node-fetch'
+import { create } from 'fontkit'
 import { Buffer } from 'node:buffer'
 import { relative, join } from 'node:path'
-import { openSync, create } from 'fontkit'
-import { getFallbackMetricsFromFontFile } from './font'
-import { pickFontFileForFallbackGeneration } from './fallback'
-import { writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs'
+import { getFallbackMetricsFromFontFile } from './font.ts'
+import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
 interface Config {
   name: string;
@@ -17,7 +15,6 @@ interface Config {
   src: {
     path: string;
     style: string;
-    inline?: boolean;
     preload?: boolean;
     weight?: string | number;
     css?: { [property: string]: string };
@@ -57,6 +54,14 @@ const extToFormat = {
   eot: 'embedded-opentype',
 }
 
+async function getFS() {
+  let fs;
+  try {
+    fs = await import('node:fs');
+  } catch (error) { }
+  return fs
+}
+
 export function getFontType(src: string) {
   const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
   if (!ext) {
@@ -65,16 +70,17 @@ export function getFontType(src: string) {
   return extToFormat[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf'];
 }
 
-async function getFontBuffer(path: string) {
-  let resp: Buffer
+async function getFontBuffer(path: string): Promise<Buffer | undefined> {
+  const fs = await getFS()
   if (path.includes('https://')) {
     let tmp = await fetch(path)
-    resp = Buffer.from(await tmp.arrayBuffer())
+    return Buffer.from(await tmp.arrayBuffer())
   }
   else {
-    resp = readFileSync(path)
+    if (fs) {
+      return fs.readFileSync(path)
+    }
   }
-  return resp
 }
 
 function extractFileNameFromPath(path: string): string {
@@ -83,17 +89,22 @@ function extractFileNameFromPath(path: string): string {
   return path
 }
 
-async function createFontFiles(fontPath: [number, number, string, string]) {
+async function createFontFiles(fontPath: [number, number, string, string]): Promise<[number, number, string]> {
+  const fs = await getFS()
   const [i, j, path, basePath] = fontPath;
+  if (!fs) return [i, j, path]
   const name = extractFileNameFromPath(path)
   const generatedFolderPath = join(basePath, '__astro_font_generated__')
   const savedName = join(generatedFolderPath, name)
-  if (existsSync(savedName)) return [i, j, savedName]
+  if (fs.existsSync(savedName)) return [i, j, savedName]
   const fontBuffer = await getFontBuffer(path);
-  if (!existsSync(generatedFolderPath)) mkdirSync(generatedFolderPath);
-  console.log(`[astro-font] ▶ Generated ${savedName}`)
-  writeFileSync(savedName, fontBuffer);
-  return [i, j, savedName]
+  if (!fs.existsSync(generatedFolderPath)) fs.mkdirSync(generatedFolderPath);
+  if (fontBuffer) {
+    console.log(`[astro-font] ▶ Generated ${savedName}`)
+    fs.writeFileSync(savedName, fontBuffer);
+    return [i, j, savedName]
+  }
+  return [i, j, path]
 }
 
 export async function generateFonts(fontCollection: Config[]) {
@@ -117,44 +128,37 @@ export async function generateFonts(fontCollection: Config[]) {
 
 async function getFallbackFont(fontCollection: Config) {
   const fonts: any[] = []
-  for (let i of fontCollection.src) {
-    if (i.path.includes('https://')) {
-      const tmp = await fetch(i.path)
-      const resp = Buffer.from(await tmp.arrayBuffer())
-      fonts.push({
-        style: i.style,
-        weight: i.weight,
-        metadata: create(resp)
-      })
-    }
-    else {
-      fonts.push({
-        style: i.style,
-        weight: i.weight,
-        metadata: openSync(i.path)
-      })
-    }
+  const fs = await getFS()
+  await Promise.all(fontCollection.src.map(i => 
+    getFontBuffer(i.path).then(res => {
+      if (res) {
+        fonts.push({
+          style: i.style,
+          weight: i.weight,
+          metadata: create(res),
+        })
+      }
+    })
+  ))
+  if (fs) {
+    const { metadata } = pickFontFileForFallbackGeneration(fonts);
+    return getFallbackMetricsFromFontFile(metadata, fontCollection.fallback);
   }
-  const { metadata } = pickFontFileForFallbackGeneration(fonts);
-  return getFallbackMetricsFromFontFile(metadata, fontCollection.fallback);
+  return
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  return fontCollection.src.filter(i => i.preload !== false && i.inline !== true).map(i => getRelativePath(fontCollection.basePath || './public', i.path))
+  return fontCollection.src.filter(i => i.preload !== false).map(i => getRelativePath(fontCollection.basePath || './public', i.path))
 }
 
 export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
-  return fontCollection.src.map(async (i) => {
+  return fontCollection.src.map((i) => {
     const cssProperties = Object.entries(i.css || {})
       .map(([key, value]) => `${key}: ${value}`)
       .join(";");
     let fontWeightCSS = ""
     if (i.weight) {
       fontWeightCSS = ' font-weight: ' + i.weight + ';'
-    }
-    if (i.inline) {
-      const res = (await getFontBuffer(i.path)).toString('base64')
-      return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(data:${getFontType(i.path)};base64,${res}) format('${getFontType(i.path)}');}`
     }
     return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${fontCollection.display}; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`;
   });
@@ -163,5 +167,6 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
 export async function createFontCSS(fontCollection: Config): Promise<string> {
   const fallbackName = '_font_fallback_' + new Date().getTime()
   const fallbackFont = await getFallbackFont(fontCollection)
-  return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};}@font-face{font-family: ${fallbackName}; size-adjust: ${fallbackFont.sizeAdjust}; src: local('${fallbackFont.fallbackFont}'); ascent-override: ${fallbackFont.ascentOverride}; descent-override: ${fallbackFont.descentOverride}; line-gap-override: ${fallbackFont.lineGapOverride};}`
+  if (fallbackFont) return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};} @font-face{font-family: ${fallbackName}; size-adjust: ${fallbackFont.sizeAdjust}; src: local('${fallbackFont.fallbackFont}'); ascent-override: ${fallbackFont.ascentOverride}; descent-override: ${fallbackFont.descentOverride}; line-gap-override: ${fallbackFont.lineGapOverride};}`
+  return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fontCollection.fallback};}`
 }
