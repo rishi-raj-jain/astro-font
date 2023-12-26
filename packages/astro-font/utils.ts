@@ -93,11 +93,18 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
   const [i, j, path, basePath] = fontPath
   if (!fs) return [i, j, path]
   const name = extractFileNameFromPath(path)
+  if (!fs.existsSync(basePath)) {
+    fs.mkdirSync(basePath)
+    console.log(`[astro-font] ▶ Created ${basePath}`)
+  }
   const generatedFolderPath = join(basePath, '__astro_font_generated__')
   const savedName = join(generatedFolderPath, name)
   if (fs.existsSync(savedName)) return [i, j, savedName]
   const fontBuffer = await getFontBuffer(path)
-  if (!fs.existsSync(generatedFolderPath)) fs.mkdirSync(generatedFolderPath)
+  if (!fs.existsSync(generatedFolderPath)) {
+    fs.mkdirSync(generatedFolderPath)
+    console.log(`[astro-font] ▶ Created ${generatedFolderPath}`)
+  }
   if (fontBuffer) {
     console.log(`[astro-font] ▶ Generated ${savedName}`)
     fs.writeFileSync(savedName, fontBuffer)
