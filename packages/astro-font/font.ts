@@ -40,11 +40,7 @@ function calcAverageWidth(font: Font): number | undefined {
       .glyphsForString(avgCharacters)
       .flatMap((glyph) => glyph.codePoints)
       .every((codePoint) => font.hasGlyphForCodePoint(codePoint))
-
-    if (!hasAllChars) {
-      return undefined
-    }
-
+    if (!hasAllChars) return undefined
     const widths = font.glyphsForString(avgCharacters).map((glyph) => glyph.advanceWidth)
     const totalWidth = widths.reduce((sum, width) => sum + width, 0)
     return totalWidth / widths.length

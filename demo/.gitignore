@@ -1,0 +1,3 @@
+dist/
+.vercel/
+node_modules/

@@ -2,7 +2,7 @@
   "license": "MIT",
   "type": "module",
   "private": false,
-  "version": "0.0.39",
+  "version": "0.0.57.4",
   "name": "astro-font",
   "types": "index.d.ts",
   "exports": {
@@ -32,7 +32,8 @@
     "fonts"
   ],
   "dependencies": {
-    "fontkit": "^2.0.2"
+    "fontkit": "^2.0.2",
+    "github-slugger": "^2.0.0"
   },
   "homepage": "https://github.com/rishi-raj-jain/astro-font",
   "description": "An Astro integration to optimize Local & Google fonts inspired by @next/font",

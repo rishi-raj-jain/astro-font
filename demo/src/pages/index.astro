@@ -1,5 +1,5 @@
 ---
-import { AstroFont } from "astro-font";
+import { AstroFont } from 'astro-font'
 ---
 
 <html lang="en">
@@ -11,41 +11,41 @@ import { AstroFont } from "astro-font";
       config={[
         {
           // font-name to be used when generating the CSS
-          name: "Afacad",
+          name: 'Afacad',
           // Optional (but needs to be set for workspaces as the project's basePath+public dir)
-          basePath: "./demo/public",
+          basePath: './demo/public',
           src: [
             {
-              style: "bold",
+              style: 'bold',
               // (Optional) but ensures that it is preloaded
               preload: true,
-              path: "https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2",
+              path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2',
             },
             {
-              weight: "500",
-              style: "medium",
+              weight: '500',
+              style: 'medium',
               // (Optional) but does not preload this specifically
               preload: false,
-              path: "./demo/public/fonts/Afacad-Medium.ttf",
+              path: './demo/public/fonts/Afacad-Medium.ttf',
             },
             {
-              weight: "400",
-              style: "normal",
-              path: "./demo/public/fonts/Afacad-Regular.ttf",
+              weight: '400',
+              style: 'normal',
+              path: './demo/public/fonts/Afacad-Regular.ttf',
               // Some other properties to be used with the this particular font
               css: {
-                'font-feature-settings': 'normal'
-              }
+                'font-feature-settings': 'normal',
+              },
             },
           ],
           // Whether to preload the font in the output HTML
           preload: true,
           // Whether to swap the display
-          display: "swap",
+          display: 'swap',
           // Where to apply this whole font (using CSS selector)
-          selector: "body",
+          selector: 'body',
           // What kind of fallback to use: serif or sans-serif
-          fallback: "sans-serif",
+          fallback: 'sans-serif',
         },
       ]}
     />

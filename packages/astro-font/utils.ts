@@ -1,5 +1,6 @@
 import { create } from 'fontkit'
 import { Buffer } from 'node:buffer'
+import { slug } from 'github-slugger'
 import { relative, join } from 'node:path'
 import { getFallbackMetricsFromFontFile } from './font.ts'
 import { pickFontFileForFallbackGeneration } from './fallback.ts'
@@ -12,26 +13,22 @@ interface Config {
   name: string
   display: string
   selector: string
+  cacheDir?: string
   basePath?: string
   preload?: boolean
   notFetch?: boolean
   fallback: 'serif' | 'sans-serif'
   src: {
     path: string
+    css?: Record
     style: string
     preload?: boolean
     weight?: string | number
-    css?: Record
   }[]
 }
 
 export interface Props {
   config: Config[]
-}
-
-export function getRelativePath(from: string, to: string) {
-  if (to.includes('https')) return to
-  return '/' + relative(from, to)
 }
 
 const extToPreload = {
@@ -42,33 +39,51 @@ const extToPreload = {
   eot: 'application/vnd.ms-fontobject',
 }
 
-const extToFormat = {
-  woff: 'woff',
-  woff2: 'woff2',
-  ttf: 'truetype',
-  otf: 'opentype',
-  eot: 'embedded-opentype',
+export function getRelativePath(from: string, to: string) {
+  if (to.includes('https')) return to
+  return '/' + relative(from, to)
 }
 
 // Check if file system can be accessed
-async function getFS() {
+async function getFS(): Promise<typeof import('node:fs') | undefined> {
   let fs
   try {
     fs = await import('node:fs')
-  } catch (error) {}
-  return fs
+    return fs
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+async function getOS(): Promise<typeof import('node:os') | undefined> {
+  let os
+  try {
+    os = await import('node:os')
+    return os
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 // Check if writing is permitted by the file system
-async function ifFSWrites() {
+async function ifFSOSWrites(dir: string): Promise<string | undefined> {
   try {
     const fs = await getFS()
     if (fs) {
-      fs.accessSync('./random', fs.constants.W_OK)
-      return true
+      const testDir = join(dir, '.astro_font')
+      if (fs.existsSync(testDir)) {
+        fs.rmSync(testDir, { recursive: true, force: true })
+        fs.mkdirSync(testDir)
+        return dir
+      } else {
+        fs.mkdirSync(testDir)
+        return dir
+      }
     }
-  } catch (e) {}
-  return false
+  } catch (e) {
+    // console.log(dir)
+    console.log(e)
+  }
 }
 
 // Compute the preload type for the <link tag
@@ -101,7 +116,7 @@ function extractFileNameFromPath(path: string): string {
 
 async function createFontFiles(fontPath: [number, number, string, string]): Promise<[number, number, string]> {
   const [i, j, path, basePath] = fontPath
-  
+
   // Check if we've access to fs exist in the system
   const fs = await getFS()
   if (!fs) return [i, j, path]
@@ -115,7 +130,7 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
   if (fs.existsSync(savedName)) return [i, j, savedName]
 
   // Check if writing files is permitted by the system
-  const writeAllowed = await ifFSWrites()
+  const writeAllowed = await ifFSOSWrites(process.cwd())
   if (!writeAllowed) return [i, j, savedName]
 
   // By now, we can do anything with fs, hence proceed with creating the folder
@@ -137,9 +152,8 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
   return [i, j, path]
 }
 
-
 // Function to generate the final destination of the fonts and consume further
-export async function generateFonts(fontCollection: Config[]) {
+export async function generateFonts(fontCollection: Config[]): Promise<Config[]> {
   const duplicatedCollection = [...fontCollection]
   const indicesMatrix: [number, number, string, string][] = []
   duplicatedCollection.forEach((config, i) => {
@@ -158,27 +172,59 @@ export async function generateFonts(fontCollection: Config[]) {
   return duplicatedCollection
 }
 
-async function getFallbackFont(fontCollection: Config) {
+async function getFallbackFont(fontCollection: Config): Promise<Record> {
   const fonts: any[] = []
-  const fs = await getFS()
-  await Promise.all(
-    fontCollection.src.map((i) =>
-      getFontBuffer(i.path).then((res) => {
-        if (res) {
-          fonts.push({
-            style: i.style,
-            weight: i.weight,
-            metadata: create(res),
-          })
+  let writeAllowed, tmpDir, cachedFilePath, cacheDir
+  const [os, fs] = await Promise.all([getOS(), getFS()])
+  if (fs) {
+    if (os) {
+      writeAllowed = await Promise.all([ifFSOSWrites(os.tmpdir()), ifFSOSWrites('/tmp')])
+      tmpDir = writeAllowed.find((i) => i !== undefined)
+      console.log(1)
+      cacheDir = fontCollection.cacheDir || (tmpDir ? join(tmpDir, '.astro_font') : undefined)
+      if (cacheDir) {
+        // Create a json based on slugified path, style and weight
+        const cachedFileName = fontCollection.src.map((i) => slug(`${i.path}_${i.style}_${i.weight}`)).join('_') + '.txt'
+        cachedFilePath = join(cacheDir, cachedFileName)
+        if (fs.existsSync(cachedFilePath)) {
+          return JSON.parse(fs.readFileSync(cachedFilePath, 'utf8'))
         }
-      }),
-    ),
-  )
-  if (fs && fonts.length > 0) {
-    const { metadata } = pickFontFileForFallbackGeneration(fonts)
-    return getFallbackMetricsFromFontFile(metadata, fontCollection.fallback)
+      }
+    }
+    await Promise.all(
+      fontCollection.src.map((i) =>
+        getFontBuffer(i.path).then((res) => {
+          if (res) {
+            fonts.push({
+              style: i.style,
+              weight: i.weight,
+              metadata: create(res),
+            })
+          }
+        }),
+      ),
+    )
+    if (fs && fonts.length > 0) {
+      const { metadata } = pickFontFileForFallbackGeneration(fonts)
+      const fallbackMetrics = getFallbackMetricsFromFontFile(metadata, fontCollection.fallback)
+      if (tmpDir) {
+        if (cacheDir) {
+          if (!fs.existsSync(cacheDir)) {
+            fs.mkdirSync(cacheDir)
+            console.log(`[astro-font] ▶ Created ${cacheDir}`)
+          }
+        }
+        if (cachedFilePath) {
+          if (!fs.existsSync(cachedFilePath)) {
+            fs.writeFileSync(cachedFilePath, JSON.stringify(fallbackMetrics), 'utf8')
+            console.log(`[astro-font] ▶ Created ${cachedFilePath}`)
+          }
+        }
+      }
+      return fallbackMetrics
+    }
   }
-  return
+  return {}
 }
 
 export function createPreloads(fontCollection: Config): string[] {
@@ -186,18 +232,21 @@ export function createPreloads(fontCollection: Config): string[] {
 }
 
 export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
-  return fontCollection.src.map((i) => {
-    const cssProperties = Object.entries(i.css || {})
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(';')
-    let fontWeightCSS = ''
-    if (i.weight) {
-      fontWeightCSS = ' font-weight: ' + i.weight + ';'
-    }
-    return `@font-face {${cssProperties} font-style: ${i.style};${fontWeightCSS} font-family: ${fontCollection.name}; font-display: ${
-      fontCollection.display
-    }; src: url(${getRelativePath(fontCollection.basePath || './public', i.path)});}`
-  })
+  try {
+    const tmp = fontCollection.src.map((i) => {
+      const cssProperties = Object.entries(i.css || {}).map(([key, value]) => `${key}: ${value}`)
+      if (i.weight) cssProperties.push(`font-weight: ${i.weight}`)
+      if (i.style) cssProperties.push(`font-style: ${i.style}`)
+      if (fontCollection.name) cssProperties.push(`font-family: ${fontCollection.name}`)
+      if (fontCollection.display) cssProperties.push(`font-display: ${fontCollection.display}`)
+      cssProperties.push(`src: url(${getRelativePath(fontCollection.basePath || './public', i.path)})`)
+      return `@font-face {${cssProperties.join(';')}}`
+    })
+    return tmp
+  } catch (e) {
+    console.log(e)
+  }
+  return []
 }
 
 export async function createFontCSS(fontCollection: Config): Promise<string> {
@@ -206,7 +255,7 @@ export async function createFontCSS(fontCollection: Config): Promise<string> {
   const fallbackName = '_font_fallback_' + new Date().getTime()
   collection.push(fontCollection.selector)
   collection.push(`{`)
-  if (fallbackFont) {
+  if (Object.keys(fallbackFont).length > 0) {
     collection.push(`font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};`)
     collection.push(`}`)
     collection.push(`@font-face`)

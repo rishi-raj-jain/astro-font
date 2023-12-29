@@ -10,5 +10,5 @@ export const tsup: Options = {
   platform: 'browser',
   noExternal: ['fontkit'],
   entryPoints: ['./utils.ts'],
-  external: ['node:fs', 'node:path', 'node:buffer'],
+  external: ['node:fs', 'node:path', 'node:buffer', 'node:os'],
 }

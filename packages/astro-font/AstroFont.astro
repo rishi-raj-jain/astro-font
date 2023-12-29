@@ -1,16 +1,16 @@
 ---
 import type { Props } from './dist/utils'
-import { generateFonts, createFontCSS, createBaseCSS, createPreloads, getPreloadType } from './dist/utils'
+import { generateFonts, getPreloadType, createPreloads, createBaseCSS, createFontCSS } from './dist/utils'
 
 const { config } = Astro.props as Props
 
 const resolvedConfig = await generateFonts(config)
 
-const preloads = resolvedConfig.map(createPreloads).flat()
-const baseCSS = await Promise.all(resolvedConfig.map(createBaseCSS))
-const fallbackCSS = (await Promise.all(resolvedConfig.map(createFontCSS))).flat()
+const preloads = resolvedConfig.map(createPreloads)
+const baseCSS = Promise.all(resolvedConfig.map(createBaseCSS))
+const fallbackCSS = Promise.all(resolvedConfig.map(createFontCSS))
 ---
 
-{preloads.map((content) => <link as="font" crossorigin rel="preload" href={content} type={getPreloadType(content)} />)}
-{baseCSS.map((content) => <style set:html={content} is:inline />)}
-{fallbackCSS.map((content) => <style set:html={content} is:inline />)}
+{preloads.flat().map((content) => <link as="font" crossorigin rel="preload" href={content} type={getPreloadType(content)} />)}
+{baseCSS.then((res) => res.flat().map((content) => <style set:html={content} is:inline />)).catch(console.log)}
+{fallbackCSS.then((res) => res.flat().map((content) => <style set:html={content} is:inline />)).catch(console.log)}

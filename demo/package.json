@@ -4,13 +4,16 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "fmt": "prettier --write '**/*' --ignore-unknown"
   },
   "devDependencies": {
-    "astro": "latest"
+    "prettier": "^3.1.1",
+    "prettier-plugin-astro": "^0.12.2"
   },
   "dependencies": {
-    "@astrojs/node": "^7.0.2",
-    "astro-font": "workspace:*"
+    "astro": "latest",
+    "@astrojs/vercel": "latest",
+    "astro-font": "workspace:../packages/astro-font"
   }
 }

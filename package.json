@@ -2,8 +2,9 @@
   "name": "astro-font",
   "scripts": {
     "start": "astro --root demo dev",
-    "build": "astro --root demo build",
-    "serve": "astro --root demo preview"
+    "build": "cd packages/astro-font && pnpm build && cd ../../ && astro --root demo build",
+    "preview": "astro --root demo preview",
+    "deploy-preview": "pnpm build && cd demo && vercel deploy --prebuilt"
   },
   "devDependencies": {
     "astro": "latest"
