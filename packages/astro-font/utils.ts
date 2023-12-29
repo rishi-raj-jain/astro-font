@@ -50,6 +50,7 @@ const extToFormat = {
   eot: 'embedded-opentype',
 }
 
+// Check if file system can be accessed
 async function getFS() {
   let fs
   try {
@@ -58,6 +59,7 @@ async function getFS() {
   return fs
 }
 
+// Check if writing is permitted by the file system
 async function ifFSWrites() {
   try {
     const fs = await getFS()
@@ -69,30 +71,28 @@ async function ifFSWrites() {
   return false
 }
 
+// Compute the preload type for the <link tag
 export function getPreloadType(src: string) {
   const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
   if (!ext) throw Error(`Unexpected file \`${src}\``)
   return extToPreload[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf']
 }
 
-export function getFontType(src: string) {
-  const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
-  if (!ext) throw Error(`Unexpected file \`${src}\``)
-  return extToFormat[ext as 'woff' | 'woff2' | 'eot' | 'ttf' | 'otf']
-}
-
+// Get the font whether remote or local buffer
 async function getFontBuffer(path: string): Promise<Buffer | undefined> {
   const fs = await getFS()
   if (path.includes('https://')) {
     let tmp = await fetch(path)
     return Buffer.from(await tmp.arrayBuffer())
   } else {
+    // If the file system has the access to the *local* font
     if (fs && fs.existsSync(path)) {
       return fs.readFileSync(path)
     }
   }
 }
 
+// Get everything after the last forward slash
 function extractFileNameFromPath(path: string): string {
   const lastSlashIndex = path.lastIndexOf('/')
   if (lastSlashIndex !== -1) return path.substring(lastSlashIndex + 1)
@@ -100,23 +100,32 @@ function extractFileNameFromPath(path: string): string {
 }
 
 async function createFontFiles(fontPath: [number, number, string, string]): Promise<[number, number, string]> {
-  const fs = await getFS()
   const [i, j, path, basePath] = fontPath
+  
+  // Check if we've access to fs exist in the system
+  const fs = await getFS()
   if (!fs) return [i, j, path]
 
+  // Compute the to-be destination of the font
   const name = extractFileNameFromPath(path)
   const generatedFolderPath = join(basePath, '__astro_font_generated__')
   const savedName = join(generatedFolderPath, name)
 
-  const writeAllowed = await ifFSWrites()
+  // If the to-be destination already exists, pre-predict
   if (fs.existsSync(savedName)) return [i, j, savedName]
+
+  // Check if writing files is permitted by the system
+  const writeAllowed = await ifFSWrites()
   if (!writeAllowed) return [i, j, savedName]
 
+  // By now, we can do anything with fs, hence proceed with creating the folder
   if (!fs.existsSync(generatedFolderPath)) {
     fs.mkdirSync(generatedFolderPath)
     console.log(`[astro-font] ▶ Created ${generatedFolderPath}`)
   }
 
+  // Try to get the font buffer
+  // If found, place it in the required directory
   const fontBuffer = await getFontBuffer(path)
   if (fontBuffer) {
     console.log(`[astro-font] ▶ Generated ${savedName}`)
@@ -124,9 +133,12 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
     return [i, j, savedName]
   }
 
+  // Fallback to the original configurations
   return [i, j, path]
 }
 
+
+// Function to generate the final destination of the fonts and consume further
 export async function generateFonts(fontCollection: Config[]) {
   const duplicatedCollection = [...fontCollection]
   const indicesMatrix: [number, number, string, string][] = []
