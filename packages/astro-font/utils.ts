@@ -58,6 +58,17 @@ async function getFS() {
   return fs
 }
 
+async function ifFSWrites() {
+  try {
+    const fs = await getFS()
+    if (fs) {
+      fs.accessSync('./random', fs.constants.W_OK)
+      return true
+    }
+  } catch (e) {}
+  return false
+}
+
 export function getPreloadType(src: string) {
   const ext = /\.(woff|woff2|eot|ttf|otf)$/.exec(src)?.[1]
   if (!ext) throw Error(`Unexpected file \`${src}\``)
@@ -76,7 +87,7 @@ async function getFontBuffer(path: string): Promise<Buffer | undefined> {
     let tmp = await fetch(path)
     return Buffer.from(await tmp.arrayBuffer())
   } else {
-    if (fs) {
+    if (fs && fs.existsSync(path)) {
       return fs.readFileSync(path)
     }
   }
@@ -92,24 +103,27 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
   const fs = await getFS()
   const [i, j, path, basePath] = fontPath
   if (!fs) return [i, j, path]
+
   const name = extractFileNameFromPath(path)
-  if (!fs.existsSync(basePath)) {
-    fs.mkdirSync(basePath)
-    console.log(`[astro-font] ▶ Created ${basePath}`)
-  }
   const generatedFolderPath = join(basePath, '__astro_font_generated__')
   const savedName = join(generatedFolderPath, name)
+
+  const writeAllowed = await ifFSWrites()
   if (fs.existsSync(savedName)) return [i, j, savedName]
-  const fontBuffer = await getFontBuffer(path)
+  if (!writeAllowed) return [i, j, savedName]
+
   if (!fs.existsSync(generatedFolderPath)) {
     fs.mkdirSync(generatedFolderPath)
     console.log(`[astro-font] ▶ Created ${generatedFolderPath}`)
   }
+
+  const fontBuffer = await getFontBuffer(path)
   if (fontBuffer) {
     console.log(`[astro-font] ▶ Generated ${savedName}`)
     fs.writeFileSync(savedName, fontBuffer)
     return [i, j, savedName]
   }
+
   return [i, j, path]
 }
 
@@ -148,7 +162,7 @@ async function getFallbackFont(fontCollection: Config) {
       }),
     ),
   )
-  if (fs) {
+  if (fs && fonts.length > 0) {
     const { metadata } = pickFontFileForFallbackGeneration(fonts)
     return getFallbackMetricsFromFontFile(metadata, fontCollection.fallback)
   }
@@ -175,9 +189,26 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
 }
 
 export async function createFontCSS(fontCollection: Config): Promise<string> {
-  const fallbackName = '_font_fallback_' + new Date().getTime()
+  const collection = []
   const fallbackFont = await getFallbackFont(fontCollection)
-  if (fallbackFont)
-    return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};} @font-face{font-family: ${fallbackName}; size-adjust: ${fallbackFont.sizeAdjust}; src: local('${fallbackFont.fallbackFont}'); ascent-override: ${fallbackFont.ascentOverride}; descent-override: ${fallbackFont.descentOverride}; line-gap-override: ${fallbackFont.lineGapOverride};}`
-  return `${fontCollection.selector}{font-family: ${fontCollection.name}, ${fontCollection.fallback};}`
+  const fallbackName = '_font_fallback_' + new Date().getTime()
+  collection.push(fontCollection.selector)
+  collection.push(`{`)
+  if (fallbackFont) {
+    collection.push(`font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};`)
+    collection.push(`}`)
+    collection.push(`@font-face`)
+    collection.push(`{`)
+    collection.push(`font-family: ${fallbackName};`)
+    collection.push(`size-adjust: ${fallbackFont.sizeAdjust};`)
+    collection.push(`src: local('${fallbackFont.fallbackFont}');`)
+    collection.push(`ascent-override: ${fallbackFont.ascentOverride};`)
+    collection.push(`descent-override: ${fallbackFont.descentOverride};`)
+    collection.push(`line-gap-override: ${fallbackFont.lineGapOverride};`)
+    collection.push(`}`)
+  } else {
+    collection.push(`font-family: ${fontCollection.name}, ${fontCollection.fallback};`)
+    collection.push(`}`)
+  }
+  return collection.join(' ')
 }

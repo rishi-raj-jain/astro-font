@@ -75,10 +75,8 @@ function formatOverrideValue(val: number) {
  */
 export function getFallbackMetricsFromFontFile(font: Font, category = 'serif') {
   const fallbackFont = category === 'serif' ? DEFAULT_SERIF_FONT : DEFAULT_SANS_SERIF_FONT
-
   const azAvgWidth = calcAverageWidth(font)
   const { ascent, descent, lineGap, unitsPerEm } = font
-
   const fallbackFontAvgWidth = fallbackFont.azAvgWidth / fallbackFont.unitsPerEm
   let sizeAdjust = azAvgWidth ? azAvgWidth / unitsPerEm / fallbackFontAvgWidth : 1
   return {
