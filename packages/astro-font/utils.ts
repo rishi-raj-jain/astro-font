@@ -180,7 +180,6 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
     if (os) {
       writeAllowed = await Promise.all([ifFSOSWrites(os.tmpdir()), ifFSOSWrites('/tmp')])
       tmpDir = writeAllowed.find((i) => i !== undefined)
-      console.log(1)
       cacheDir = fontCollection.cacheDir || (tmpDir ? join(tmpDir, '.astro_font') : undefined)
       if (cacheDir) {
         // Create a json based on slugified path, style and weight
