@@ -1,12 +1,20 @@
 {
-  "name": "astro-font",
+  "name": "astro-font-demo",
   "scripts": {
-    "start": "astro --root demo dev",
-    "build": "cd packages/astro-font && pnpm build && cd ../../ && astro --root demo build",
-    "preview": "astro --root demo preview",
-    "deploy-preview": "pnpm build && cd demo && vercel deploy --prebuilt"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "cd packages/astro-font && pnpm build && cd ../../ && astro build",
+    "preview": "astro preview",
+    "fmt": "prettier --write '**/*' --ignore-unknown",
+    "deploy-preview": "pnpm build && vercel deploy --prebuilt"
   },
   "devDependencies": {
-    "astro": "latest"
+    "prettier": "^3.1.1",
+    "prettier-plugin-astro": "^0.12.2"
+  },
+  "dependencies": {
+    "astro": "latest",
+    "@astrojs/vercel": "latest",
+    "astro-font": "workspace:./packages/astro-font"
   }
 }
