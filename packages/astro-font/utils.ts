@@ -227,7 +227,9 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  return fontCollection.src.filter((i) => i.preload !== false).map((i) => getRelativePath(fontCollection.basePath || './public', i.path))
+  return fontCollection.src
+    .filter((i) => i.preload !== false)
+    .map((i) => getRelativePath(fontCollection.basePath || './public', i.path))
 }
 
 export async function createBaseCSS(fontCollection: Config): Promise<string[]> {

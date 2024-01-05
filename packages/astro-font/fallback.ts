@@ -56,7 +56,9 @@ function getDistanceFromNormalWeight(weight?: string) {
  * - Most of the text will have normal style, prefer normal over italic
  * - If two font files have the same distance from normal weight, the thinner one will most likely be the bulk of the text
  */
-export function pickFontFileForFallbackGeneration<T extends { style?: string; weight?: string; metadata: Font }>(fontFiles: T[]): T {
+export function pickFontFileForFallbackGeneration<T extends { style?: string; weight?: string; metadata: Font }>(
+  fontFiles: T[],
+): T {
   return fontFiles.reduce((usedFontFile, currentFontFile) => {
     if (!usedFontFile) {
       return currentFontFile
@@ -64,7 +66,10 @@ export function pickFontFileForFallbackGeneration<T extends { style?: string; we
     const usedFontDistance = getDistanceFromNormalWeight(usedFontFile.weight)
     const currentFontDistance = getDistanceFromNormalWeight(currentFontFile.weight)
     // Prefer normal style if they have the same weight
-    if (usedFontDistance === currentFontDistance && (typeof currentFontFile.style === 'undefined' || currentFontFile.style === 'normal')) {
+    if (
+      usedFontDistance === currentFontDistance &&
+      (typeof currentFontFile.style === 'undefined' || currentFontFile.style === 'normal')
+    ) {
       return currentFontFile
     }
     const absUsedDistance = Math.abs(usedFontDistance)
