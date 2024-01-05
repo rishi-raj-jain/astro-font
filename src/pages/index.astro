@@ -13,7 +13,7 @@ import { AstroFont } from 'astro-font'
           // font-name to be used when generating the CSS
           name: 'Afacad',
           // Optional (but needs to be set for workspaces as the project's basePath+public dir)
-          basePath: './demo/public',
+          basePath: './public',
           src: [
             {
               style: 'bold',
@@ -26,12 +26,12 @@ import { AstroFont } from 'astro-font'
               style: 'medium',
               // (Optional) but does not preload this specifically
               preload: false,
-              path: './demo/public/fonts/Afacad-Medium.ttf',
+              path: './public/fonts/Afacad-Medium.ttf',
             },
             {
               weight: '400',
               style: 'normal',
-              path: './demo/public/fonts/Afacad-Regular.ttf',
+              path: './public/fonts/Afacad-Regular.ttf',
               // Some other properties to be used with the this particular font
               css: {
                 'font-feature-settings': 'normal',
