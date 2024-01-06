@@ -2,11 +2,10 @@
   "name": "astro-font-demo",
   "scripts": {
     "dev": "astro dev",
-    "start": "astro dev",
-    "build": "cd packages/astro-font && pnpm build && cd ../../ && astro build",
+    "build": "astro build",
     "preview": "astro preview",
-    "fmt": "prettier --write '**/*' --ignore-unknown",
-    "deploy-preview": "pnpm build && vercel deploy --prebuilt"
+    "build:astro-font": "cd packages/astro-font && pnpm build",
+    "fmt": "prettier --write '**/*' --ignore-unknown"
   },
   "devDependencies": {
     "prettier": "^3.1.1",
