@@ -129,3 +129,49 @@ import { AstroFont } from "astro-font";
     />
 </head>
 ```
+
+## Configuring CSS Classes
+
+The `selector` attribute per config object can be used to configure which CSS class will reflect the whole CSS (automatically including the references to fallback fonts CSS).
+
+```
+<AstroFont
+  config={[
+    {
+      name: "Afacad",
+      src: [
+        {
+          style: 'bold',
+          weight: '700',
+          path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
+        },
+      ],
+      preload: true,
+      display: "swap",
+      fallback: "sans-serif",
+
+      // My Custom CSS Selector
+      // Type: ClassName
+      selector: ".custom_class",
+
+    },
+    {
+      name: "Inter",
+      src: [
+        {
+          weight: '400',
+          style: 'normal',
+          path: './public/fonts/Inter-Regular.ttf'
+        }
+      ],
+      preload: true,
+      display: "swap",
+      fallback: "serif",
+
+      // My Custom CSS Selector
+      // Type: CSS Selector
+      selector: "body > span",
+    },
+  ]}
+/>
+```
