@@ -39,6 +39,10 @@ const extToPreload = {
   eot: 'application/vnd.ms-fontobject',
 }
 
+function getBasePath(src?: string) {
+  return src || './public'
+}
+
 export function getRelativePath(from: string, to: string) {
   if (to.includes('https')) return to
   return '/' + relative(from, to)
@@ -159,7 +163,7 @@ export async function generateFonts(fontCollection: Config[]): Promise<Config[]>
   duplicatedCollection.forEach((config, i) => {
     if (config.fetch) {
       config.src.forEach((src, j) => {
-        indicesMatrix.push([i, j, src.path, config.basePath || './public'])
+        indicesMatrix.push([i, j, src.path, getBasePath(config.basePath)])
       })
     }
   })
@@ -227,10 +231,9 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  console.log(new Date().getTime())
   return fontCollection.src
     .filter((i) => i.preload !== false)
-    .map((i) => getRelativePath(fontCollection.basePath || './public', i.path))
+    .map((i) => getRelativePath(getBasePath(fontCollection.basePath), i.path))
 }
 
 export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
@@ -241,7 +244,7 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
       if (i.style) cssProperties.push(`font-style: ${i.style}`)
       if (fontCollection.name) cssProperties.push(`font-family: ${fontCollection.name}`)
       if (fontCollection.display) cssProperties.push(`font-display: ${fontCollection.display}`)
-      cssProperties.push(`src: url(${getRelativePath(fontCollection.basePath || './public', i.path)})`)
+      cssProperties.push(`src: url(${getRelativePath(getBasePath(fontCollection.basePath), i.path)})`)
       return `@font-face {${cssProperties.join(';')}}`
     })
     return tmp
