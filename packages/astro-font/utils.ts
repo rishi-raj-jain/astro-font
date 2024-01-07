@@ -227,6 +227,7 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
 }
 
 export function createPreloads(fontCollection: Config): string[] {
+  console.log(new Date().getTime())
   return fontCollection.src
     .filter((i) => i.preload !== false)
     .map((i) => getRelativePath(fontCollection.basePath || './public', i.path))
