@@ -1,1 +1,1 @@
-packages/astro-font/README.md
+./packages/astro-font/README.md
