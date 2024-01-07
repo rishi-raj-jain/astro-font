@@ -2,8 +2,7 @@
   "name": "astro-font-demo",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
+    "build": "pnpm build:astro-font && astro build",
     "build:astro-font": "cd packages/astro-font && pnpm build",
     "fmt": "prettier --write '**/*' --ignore-unknown"
   },

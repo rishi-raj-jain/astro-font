@@ -3,3 +3,4 @@ dist/
 README.md
 node_modules/
 public/
+packages/

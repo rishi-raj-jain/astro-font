@@ -11,12 +11,12 @@ interface Record {
 
 interface Config {
   name: string
+  fetch?: boolean
   display: string
   selector: string
   cacheDir?: string
   basePath?: string
   preload?: boolean
-  notFetch?: boolean
   fallback: 'serif' | 'sans-serif'
   src: {
     path: string
@@ -131,7 +131,7 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
 
   // Check if writing files is permitted by the system
   const writeAllowed = await ifFSOSWrites(process.cwd())
-  if (!writeAllowed) return [i, j, savedName]
+  if (!writeAllowed) return [i, j, path]
 
   // By now, we can do anything with fs, hence proceed with creating the folder
   if (!fs.existsSync(generatedFolderPath)) {
@@ -157,7 +157,7 @@ export async function generateFonts(fontCollection: Config[]): Promise<Config[]>
   const duplicatedCollection = [...fontCollection]
   const indicesMatrix: [number, number, string, string][] = []
   duplicatedCollection.forEach((config, i) => {
-    if (!config.notFetch) {
+    if (config.fetch) {
       config.src.forEach((src, j) => {
         indicesMatrix.push([i, j, src.path, config.basePath || './public'])
       })
