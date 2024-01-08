@@ -9,22 +9,24 @@ interface Record {
   [property: string]: string
 }
 
+interface Source {
+  path: string
+  css?: Record
+  style: string
+  preload?: boolean
+  weight?: string | number
+}
+
 interface Config {
   name: string
+  src: Source[]
   fetch?: boolean
   display: string
   selector: string
+  preload?: boolean
   cacheDir?: string
   basePath?: string
-  preload?: boolean
   fallback: 'serif' | 'sans-serif'
-  src: {
-    path: string
-    css?: Record
-    style: string
-    preload?: boolean
-    weight?: string | number
-  }[]
 }
 
 export interface Props {
@@ -112,6 +114,17 @@ function extractFileNameFromPath(path: string): string {
   return path
 }
 
+function simpleHash(input: string) {
+  let hash = 0
+  if (input.length === 0) return hash
+  for (let i = 0; i < input.length; i++) {
+    const char = input.charCodeAt(i)
+    hash = (hash << 5) - hash + char
+    hash = hash & hash
+  }
+  return Math.abs(hash).toString(16) + input.length
+}
+
 async function createFontFiles(fontPath: [number, number, string, string]): Promise<[number, number, string]> {
   const [i, j, path, basePath] = fontPath
 
@@ -181,7 +194,9 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
       cacheDir = fontCollection.cacheDir || (tmpDir ? join(tmpDir, '.astro_font') : undefined)
       if (cacheDir) {
         // Create a json based on slugified path, style and weight
-        const cachedFileName = fontCollection.src.map((i) => slug(`${i.path}_${i.style}_${i.weight}`)).join('_') + '.txt'
+        const slugifyPath = (i: Source) => slug(`${i.path}_${i.style}_${i.weight}`)
+        const slugifiedCollection = fontCollection.src.map(slugifyPath)
+        const cachedFileName = simpleHash(slugifiedCollection.join('_')) + '.txt'
         cachedFilePath = join(cacheDir, cachedFileName)
         if (fs.existsSync(cachedFilePath)) {
           return JSON.parse(fs.readFileSync(cachedFilePath, 'utf8'))
