@@ -35,7 +35,10 @@
     "fontkit": "^2.0.2",
     "github-slugger": "^2.0.0"
   },
-  "homepage": "https://github.com/rishi-raj-jain/astro-font",
+  "repository": {
+    "url": "https://github.com/rishi-raj-jain/astro-font"
+  },
+  "homepage": "https://www.launchfa.st/features/astro-font",
   "description": "An Astro integration to optimize Local & Google fonts inspired by @next/font",
   "devDependencies": {
     "@types/fontkit": "^2.0.6",
