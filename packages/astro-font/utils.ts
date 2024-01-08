@@ -199,7 +199,10 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
         const cachedFileName = simpleHash(slugifiedCollection.join('_')) + '.txt'
         cachedFilePath = join(cacheDir, cachedFileName)
         if (fs.existsSync(cachedFilePath)) {
-          return JSON.parse(fs.readFileSync(cachedFilePath, 'utf8'))
+          try {
+            const tmpCachedFilePath = fs.readFileSync(cachedFilePath, 'utf8')
+            return JSON.parse(tmpCachedFilePath)
+          } catch (errorReadingCache) {}
         }
       }
     }
