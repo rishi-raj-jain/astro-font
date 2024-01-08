@@ -75,17 +75,11 @@ async function ifFSOSWrites(dir: string): Promise<string | undefined> {
     const fs = await getFS()
     if (fs) {
       const testDir = join(dir, '.astro_font')
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true })
-        fs.mkdirSync(testDir)
-        return dir
-      } else {
-        fs.mkdirSync(testDir)
-        return dir
-      }
+      if (!fs.existsSync(testDir)) fs.mkdirSync(testDir)
+      fs.rmSync(testDir, { recursive: true, force: true })
+      return dir
     }
   } catch (e) {
-    // console.log(dir)
     console.log(e)
   }
 }
