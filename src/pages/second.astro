@@ -43,15 +43,12 @@ import { AstroFont } from 'astro-font'
           // Whether to swap the display
           display: 'swap',
           // Where to apply this whole font (using CSS selector)
-          // selector: 'random_stuff',
+          selector: 'body',
           // What kind of fallback to use: serif or sans-serif
-          fallback: 'sans-serif',
-          // emit css variable
-          cssVariable: 'random-var-name',
-          // cssVariable: true --> emits the default `--astro-font` to the root selector
+          fallback: 'serif',
         },
       ]}
     />
   </head>
-  <body><span style="font-family: var(--random-var-name);">Hello world!</span></body>
+  <body><span>Hello world!</span></body>
 </html>

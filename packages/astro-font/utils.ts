@@ -22,10 +22,11 @@ interface Config {
   src: Source[]
   fetch?: boolean
   display: string
-  selector: string
+  selector?: string
   preload?: boolean
   cacheDir?: string
   basePath?: string
+  cssVariable?: string | boolean
   fallback: 'serif' | 'sans-serif'
 }
 
@@ -270,11 +271,22 @@ export async function createFontCSS(fontCollection: Config): Promise<string> {
   const collection = []
   const fallbackFont = await getFallbackFont(fontCollection)
   const fallbackName = '_font_fallback_' + new Date().getTime()
-  collection.push(fontCollection.selector)
-  collection.push(`{`)
+  if (fontCollection.selector) {
+    collection.push(fontCollection.selector)
+    collection.push(`{`)
+  }
   if (Object.keys(fallbackFont).length > 0) {
-    collection.push(`font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};`)
-    collection.push(`}`)
+    if (fontCollection.selector) {
+      collection.push(`font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};`)
+      collection.push(`}`)
+    }
+    if (typeof fontCollection.cssVariable === 'boolean' && fontCollection.cssVariable) {
+      collection.push(`:root{ --astro-font: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`)
+    } else if (typeof fontCollection.cssVariable === 'string' && fontCollection.cssVariable.length > 0) {
+      collection.push(
+        `:root{ --${fontCollection.cssVariable}: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`,
+      )
+    }
     collection.push(`@font-face`)
     collection.push(`{`)
     collection.push(`font-family: ${fallbackName};`)
@@ -285,8 +297,17 @@ export async function createFontCSS(fontCollection: Config): Promise<string> {
     collection.push(`line-gap-override: ${fallbackFont.lineGapOverride};`)
     collection.push(`}`)
   } else {
-    collection.push(`font-family: ${fontCollection.name}, ${fontCollection.fallback};`)
-    collection.push(`}`)
+    if (fontCollection.selector) {
+      collection.push(`font-family: ${fontCollection.name}, ${fontCollection.fallback};`)
+      collection.push(`}`)
+    }
+    if (typeof fontCollection.cssVariable === 'boolean' && fontCollection.cssVariable) {
+      collection.push(`:root{ --astro-font: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`)
+    } else if (typeof fontCollection.cssVariable === 'string' && fontCollection.cssVariable.length > 0) {
+      collection.push(
+        `:root{ --${fontCollection.cssVariable}: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`,
+      )
+    }
   }
   return collection.join(' ')
 }
