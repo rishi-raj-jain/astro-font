@@ -175,3 +175,51 @@ The `selector` attribute per config object can be used to configure which CSS cl
   ]}
 />
 ```
+
+## Configuring CSS Variables
+
+The `cssVariable` attribute per config object can be used to configure which CSS variable will reflect in your document's `:root` CSS selector (automatically including the references to fallback fonts CSS).
+
+```
+<AstroFont
+  config={[
+    {
+      name: "Afacad",
+      src: [
+        {
+          style: 'bold',
+          weight: '700',
+          path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
+        },
+      ],
+      preload: true,
+      display: "swap",
+      fallback: "sans-serif",
+
+      // My Custom CSS Selector
+      // Type: ClassName
+      selector: ".custom_class",
+
+    },
+    {
+      name: "Inter",
+      src: [
+        {
+          weight: '400',
+          style: 'normal',
+          path: './public/fonts/Inter-Regular.ttf'
+        }
+      ],
+      preload: true,
+      display: "swap",
+      fallback: "serif",
+
+      // My Custom CSS Variable
+      // Type: CSS Variable
+      cssVariable: "astro-font",
+
+      // and now use it as style="font-family: var(--astro-font)"
+    },
+  ]}
+/>
+```
