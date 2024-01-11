@@ -15,12 +15,12 @@ import { AstroFont } from 'astro-font'
           // Optional (but needs to be set for workspaces as the project's basePath+public dir)
           basePath: './public',
           src: [
-            // {
-            //   style: 'bold',
-            // (Optional) but ensures that it is preloaded
-            //   preload: true,
-            //   path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2',
-            // },
+            {
+              style: 'bold',
+              // (Optional) but ensures that it is preloaded
+              preload: true,
+              path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2',
+            },
             {
               weight: '500',
               style: 'medium',

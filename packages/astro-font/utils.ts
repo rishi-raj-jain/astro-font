@@ -1,6 +1,5 @@
 import { create } from 'fontkit'
 import { Buffer } from 'node:buffer'
-import { slug } from 'github-slugger'
 import { relative, join } from 'node:path'
 import { getFallbackMetricsFromFontFile } from './font.ts'
 import { pickFontFileForFallbackGeneration } from './fallback.ts'
@@ -189,7 +188,7 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
       cacheDir = fontCollection.cacheDir || tmpDir
       if (cacheDir) {
         // Create a json based on slugified path, style and weight
-        const slugifyPath = (i: Source) => slug(`${i.path}_${i.style}_${i.weight}`)
+        const slugifyPath = (i: Source) => `${i.path}_${i.style}_${i.weight}`
         const slugifiedCollection = fontCollection.src.map(slugifyPath)
         const cachedFileName = simpleHash(slugifiedCollection.join('_')) + '.txt'
         cachedFilePath = join(cacheDir, cachedFileName)

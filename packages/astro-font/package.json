@@ -32,8 +32,7 @@
     "fonts"
   ],
   "dependencies": {
-    "fontkit": "^2.0.2",
-    "github-slugger": "^2.0.0"
+    "fontkit": "^2.0.2"
   },
   "repository": {
     "url": "https://github.com/rishi-raj-jain/astro-font"
