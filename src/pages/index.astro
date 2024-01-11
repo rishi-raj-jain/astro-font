@@ -25,7 +25,7 @@ import { AstroFont } from 'astro-font'
               weight: '500',
               style: 'medium',
               // (Optional) but does not preload this specifically
-              preload: false,
+              preload: true,
               path: './public/fonts/Afacad-Medium.ttf',
             },
             {
@@ -39,7 +39,7 @@ import { AstroFont } from 'astro-font'
             },
           ],
           // Whether to preload the font in the output HTML
-          preload: true,
+          preload: false,
           // Whether to swap the display
           display: 'swap',
           // Where to apply this whole font (using CSS selector)

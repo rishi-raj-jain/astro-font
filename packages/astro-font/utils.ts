@@ -57,9 +57,7 @@ async function getFS(): Promise<typeof import('node:fs') | undefined> {
   try {
     fs = await import('node:fs')
     return fs
-  } catch (e) {
-    console.log(e)
-  }
+  } catch (e) {}
 }
 
 async function getOS(): Promise<typeof import('node:os') | undefined> {
@@ -67,9 +65,7 @@ async function getOS(): Promise<typeof import('node:os') | undefined> {
   try {
     os = await import('node:os')
     return os
-  } catch (e) {
-    console.log(e)
-  }
+  } catch (e) {}
 }
 
 // Check if writing is permitted by the file system
@@ -82,9 +78,7 @@ async function ifFSOSWrites(dir: string): Promise<string | undefined> {
       fs.rmSync(testDir, { recursive: true, force: true })
       return dir
     }
-  } catch (e) {
-    console.log(e)
-  }
+  } catch (e) {}
 }
 
 // Compute the preload type for the <link tag
@@ -244,6 +238,13 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
 }
 
 export function createPreloads(fontCollection: Config): string[] {
+  // If the parent preload is set to be false, look for true only preload values
+  if (fontCollection.preload === false) {
+    return fontCollection.src
+      .filter((i) => i.preload === true)
+      .map((i) => getRelativePath(getBasePath(fontCollection.basePath), i.path))
+  }
+  // If the parent preload is set to be true (or not defined), look for non-false values
   return fontCollection.src
     .filter((i) => i.preload !== false)
     .map((i) => getRelativePath(getBasePath(fontCollection.basePath), i.path))
