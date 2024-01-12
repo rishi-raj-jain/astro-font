@@ -2,7 +2,7 @@
   "license": "MIT",
   "type": "module",
   "private": false,
-  "version": "0.0.71",
+  "version": "0.0.72",
   "name": "astro-font",
   "types": "index.d.ts",
   "exports": {
