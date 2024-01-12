@@ -25,6 +25,7 @@ interface Config {
   preload?: boolean
   cacheDir?: string
   basePath?: string
+  googleFontsURL?: string
   cssVariable?: string | boolean
   fallback: 'serif' | 'sans-serif'
 }
@@ -157,9 +158,55 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
   return [i, j, path]
 }
 
+// Custom script to parseGoogleCSS
+function parseGoogleCSS(tmp: string) {
+  let match
+  const fontFaceMatches = []
+  const fontFaceRegex = /@font-face\s*{([^}]+)}/g
+  while ((match = fontFaceRegex.exec(tmp)) !== null) {
+    const fontFaceRule = match[1]
+    const fontFaceObject: any = {}
+    fontFaceRule.split(';').forEach((property) => {
+      if (property.includes('src: ')) {
+        const formatPosition = property.indexOf('for')
+        fontFaceObject['path'] = property
+          .trim()
+          .substring(9, formatPosition ? formatPosition - 5 : property.length - 1)
+          .trim()
+      }
+      if (property.includes('-style: ')) {
+        fontFaceObject['style'] = property.split(':').map((i) => i.trim())[1]
+      }
+      if (property.includes('-weight: ')) {
+        fontFaceObject['weight'] = property.split(':').map((i) => i.trim())[1]
+      }
+      if (property.includes('unicode-range: ')) {
+        if (!fontFaceObject['css']) {
+          fontFaceObject['css'] = {}
+        }
+        fontFaceObject['css']['unicode-range'] = property.split(':').map((i) => i.trim())[1]
+      }
+    })
+    fontFaceMatches.push(fontFaceObject)
+  }
+  return fontFaceMatches
+}
+
 // Function to generate the final destination of the fonts and consume further
 export async function generateFonts(fontCollection: Config[]): Promise<Config[]> {
   const duplicatedCollection = [...fontCollection]
+  // Pre-operation to parse and insert google fonts in the src array
+  await Promise.all(
+    duplicatedCollection.map((config) =>
+      config.googleFontsURL
+        ? fetch(config.googleFontsURL)
+            .then((res) => res.text())
+            .then((res) => {
+              config.src = parseGoogleCSS(res)
+            })
+        : {},
+    ),
+  )
   const indicesMatrix: [number, number, string, string][] = []
   duplicatedCollection.forEach((config, i) => {
     if (config.fetch) {

@@ -1,0 +1,37 @@
+---
+import { AstroFont } from 'astro-font'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Welcome to Astro</title>
+    <AstroFont
+      config={[
+        {
+          src: [],
+          // font-name to be used when generating the CSS
+          name: 'Poppins',
+          // Google Fonts URL
+          googleFontsURL: 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;1,400;1,700&display=swap',
+          // Whether to preload the font in the output HTML
+          preload: false,
+          // Whether to swap the display
+          display: 'swap',
+          // Where to apply this whole font (using CSS selector)
+          // selector: 'random_stuff',
+          // What kind of fallback to use: serif or sans-serif
+          fallback: 'sans-serif',
+          // emit css variable
+          cssVariable: 'random-var-name',
+          // cssVariable: true --> emits the default `--astro-font` to the root selector
+        },
+      ]}
+    />
+  </head>
+  <body>
+    <span style="font-family: var(--random-var-name);">Hello world!</span>
+    <span style="font-style: italic; font-family: var(--random-var-name);">Hello world!</span>
+  </body>
+</html>
