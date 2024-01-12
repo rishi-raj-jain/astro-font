@@ -22,6 +22,35 @@ pnpm add astro-font
 
 Automatically optimize any Google Font. To use the font in all your pages, add it to `<head>` file in an Astro layout:
 
+### Use Google Fonts URL directly
+
+
+
+```astro
+---
+import { AstroFont } from "astro-font";
+---
+
+<head>
+    <AstroFont
+      config={[
+        {
+          src: [],
+          name: "Poppins",
+          // Google Fonts URL
+          googleFontsURL: 'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;1,400;1,700&display=swap',
+          preload: true,
+          display: "swap",
+          selector: "body",
+          fallback: "sans-serif",
+        },
+      ]}
+    />
+</head>
+```
+
+### Pick fonts from Google Fonts URL
+
 ```astro
 ---
 import { AstroFont } from "astro-font";
@@ -36,6 +65,7 @@ import { AstroFont } from "astro-font";
             {
               style: 'bold',
               weight: '700',
+              // Picked up font URL by manually visiting Google Fonts URL
               path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
             },
           ],
