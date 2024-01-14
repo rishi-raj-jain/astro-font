@@ -166,7 +166,11 @@ import { AstroFont } from "astro-font";
 
 The `selector` attribute per config object can be used to configure which CSS class will reflect the whole CSS (automatically including the references to fallback fonts CSS).
 
-```
+```astro
+---
+import { join } from "node:path"
+---
+
 <AstroFont
   config={[
     {
@@ -212,7 +216,11 @@ The `selector` attribute per config object can be used to configure which CSS cl
 
 The `cssVariable` attribute per config object can be used to configure which CSS variable will reflect in your document's `:root` CSS selector (automatically including the references to fallback fonts CSS).
 
-```
+```astro
+---
+import { join } from "node:path"
+---
+
 <AstroFont
   config={[
     {
