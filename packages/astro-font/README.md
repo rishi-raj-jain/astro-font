@@ -83,6 +83,7 @@ import { AstroFont } from "astro-font";
 
 ```astro
 ---
+import { join } from "node:path";
 import { AstroFont } from "astro-font";
 ---
 
@@ -95,12 +96,12 @@ import { AstroFont } from "astro-font";
             {
               style: 'normal',
               weight: '400',
-              path: './public/fonts/Afacad-Regular.ttf'
+              path: join(process.cwd(), 'public', 'fonts', 'Afacad-Regular.ttf')
             },
             {
               style: 'medium',
               weight: '500',
-              path: './public/fonts/Afacad-Medium.ttf'
+              path: join(process.cwd(), 'public', 'fonts', 'Afacad-Medium.ttf')
             },
           ],
           preload: false,
