@@ -122,6 +122,7 @@ Just extend the array of the config to contain the new collection of the fonts:
 
 ```astro
 ---
+import { join } from "node:path";
 import { AstroFont } from "astro-font";
 ---
 
@@ -148,7 +149,7 @@ import { AstroFont } from "astro-font";
             {
               weight: '400',
               style: 'normal',
-              path: './public/fonts/Inter-Regular.ttf'
+              path: join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf')
             }
           ],
           preload: true,
@@ -192,7 +193,7 @@ The `selector` attribute per config object can be used to configure which CSS cl
         {
           weight: '400',
           style: 'normal',
-          path: './public/fonts/Inter-Regular.ttf'
+          path: join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf')
         }
       ],
       preload: true,
@@ -238,7 +239,7 @@ The `cssVariable` attribute per config object can be used to configure which CSS
         {
           weight: '400',
           style: 'normal',
-          path: './public/fonts/Inter-Regular.ttf'
+          path: join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf')
         }
       ],
       preload: true,
