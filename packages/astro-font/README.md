@@ -287,7 +287,6 @@ import { join } from "node:path"
       preload: true,
       display: "swap",
       fallback: "sans-serif",
-      fallbackName: "Afacad override",
       selector: ".custom_class",
 
       // My Custom Fallback Font Name
