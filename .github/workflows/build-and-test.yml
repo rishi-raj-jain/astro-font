@@ -24,3 +24,5 @@ jobs:
         run: pnpm i
       - name: Build project
         run: pnpm build
+      - name: Output HTML
+        run: type dist/second/index.html
