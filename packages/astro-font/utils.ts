@@ -50,7 +50,6 @@ function getBasePath(src?: string) {
 
 export function getRelativePath(from: string, to: string) {
   if (to.includes('https')) return to
-  console.log(relative(from, to))
   return '/' + relative(from, to)
 }
 
