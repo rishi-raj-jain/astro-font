@@ -1,3 +1,5 @@
+/// <reference types="astro/astro-jsx" />
+
 import { create } from 'fontkit'
 import { join } from 'node:path'
 import { relative } from 'pathe'
@@ -11,17 +13,20 @@ interface Record {
 
 interface Source {
   path: string
-  css?: Record
-  style: string
+  css?: astroHTML.JSX.CSSProperties
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/font-style
+  style: "normal" | "italic" | "oblique" | `oblique ${number}deg`
   preload?: boolean
-  weight?: string | number
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
+  weight?: "normal" | "bold" | "lighter" | "bolder" | "inherit" | "initial" | "revert" | "revert-layer" | "unset" | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | number
 }
 
 interface Config {
   name: string
   src: Source[]
   fetch?: boolean
-  display: string
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
+  display: "auto" | "block" | "swap" | "fallback" | "optional"
   selector?: string
   preload?: boolean
   cacheDir?: string
@@ -29,7 +34,8 @@ interface Config {
   fallbackName?: string
   googleFontsURL?: string
   cssVariable?: string | boolean
-  fallback: 'serif' | 'sans-serif'
+  // https://developer.mozilla.org/fr/docs/Web/CSS/font-family
+  fallback: 'serif' | 'sans-serif' | 'monospace' | 'cursive' | 'fantasy' | 'system-ui' | 'emoji' | 'math' | 'fangsong' | 'inherit' | 'initial' | 'unset'
 }
 
 export interface Props {
@@ -255,7 +261,7 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
           if (res) {
             fonts.push({
               style: i.style,
-              weight: i.weight,
+              weight: i.weight?.toString(),
               metadata: create(res),
             })
           }
