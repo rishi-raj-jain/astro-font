@@ -22,9 +22,9 @@ jobs:
         run: npm i -g pnpm
       - name: Install dependencies
         run: pnpm i
-      - name: Copy
-        run: cp test.astro.config.mjs astro.config.mjs
       - name: Build project
         run: pnpm build
-      - name: Output HTML
+      - name: Output `second.astro`
         run: type dist/second/index.html
+      - name: Output `third.astro`
+        run: type dist/third/index.html
