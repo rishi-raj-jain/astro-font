@@ -1,6 +1,6 @@
 import { create } from 'fontkit'
 import { Buffer } from 'node:buffer'
-import { relative, join } from 'node:path'
+import { relative, join } from 'pathe'
 import { getFallbackMetricsFromFontFile } from './font.ts'
 import { pickFontFileForFallbackGeneration } from './fallback.ts'
 

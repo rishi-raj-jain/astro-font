@@ -40,6 +40,7 @@
     "@types/fontkit": "^2.0.6",
     "@types/node": "^20.10.5",
     "fontkit": "^2.0.2",
+    "pathe": "^1.1.2",
     "prettier": "^3.1.1",
     "prettier-plugin-astro": "^0.12.2",
     "tsup": "^8.0.1",
