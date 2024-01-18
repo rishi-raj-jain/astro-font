@@ -25,6 +25,6 @@ jobs:
       - name: Build project
         run: pnpm build
       - name: Output `second.astro`
-        run: type dist/second/index.html
+        run: type .vercel\output\static\second\index.html
       - name: Output `third.astro`
-        run: type dist/third/index.html
+        run: type .vercel\output\static\third\index.html
