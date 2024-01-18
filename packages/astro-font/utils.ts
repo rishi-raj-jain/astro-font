@@ -26,6 +26,7 @@ interface Config {
   preload?: boolean
   cacheDir?: string
   basePath?: string
+  fallbackName?: string
   googleFontsURL?: string
   cssVariable?: string | boolean
   fallback: 'serif' | 'sans-serif'
@@ -318,7 +319,7 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
 export async function createFontCSS(fontCollection: Config): Promise<string> {
   const collection = []
   const fallbackFont = await getFallbackFont(fontCollection)
-  const fallbackName = '_font_fallback_' + new Date().getTime()
+  const fallbackName = `'${fontCollection.fallbackName || '_font_fallback_' + new Date().getTime()}'`
   if (fontCollection.selector) {
     collection.push(fontCollection.selector)
     collection.push(`{`)
