@@ -1,0 +1,60 @@
+---
+import { join } from 'node:path'
+import { AstroFont } from 'astro-font'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Welcome to Astro</title>
+    <AstroFont
+      config={[
+        {
+          name: 'Deacon Black',
+          src: [
+            {
+              style: 'normal',
+              weight: 900,
+              path: join(process.cwd(), 'public', 'assets', 'fonts', 'Deacon-Black.woff2'),
+            },
+          ],
+          preload: true,
+          display: 'swap',
+          fallback: 'sans-serif',
+          cssVariable: 'deacon-black-font',
+        },
+        {
+          name: 'ABCSocialCondensed',
+          src: [
+            {
+              style: 'italic',
+              weight: 400,
+              path: join(process.cwd(), 'public', 'assets', 'fonts', 'ABCSocialCondensed-RegularItalic.woff2'),
+            },
+            {
+              style: 'normal',
+              weight: 'bold',
+              path: join(process.cwd(), 'public', 'assets', 'fonts', 'ABCSocialCondensed-Bold.woff2'),
+            },
+            {
+              style: 'italic',
+              weight: 'bold',
+              path: join(process.cwd(), 'public', 'assets', 'fonts', 'ABCSocialCondensed-BoldItalic.woff2'),
+            },
+            {
+              style: 'normal',
+              weight: 400,
+              path: join(process.cwd(), 'public', 'assets', 'fonts', 'ABCSocialCondensed-Regular.woff2'),
+            },
+          ],
+          preload: true,
+          display: 'swap',
+          fallback: 'sans-serif',
+          cssVariable: 'abcsocialcondensed-font',
+        },
+      ]}
+    />
+  </head>
+  <body><span>Hello world!</span></body>
+</html>
