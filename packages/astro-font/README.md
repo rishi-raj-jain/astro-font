@@ -263,3 +263,55 @@ import { join } from "node:path"
   ]}
 />
 ```
+
+## Configuring Fallback Font Name
+
+The `fallbackName` attribute per config object can be used to configure the fallback font's family name (in CSS).
+
+```astro
+---
+import { join } from "node:path"
+---
+
+<AstroFont
+  config={[
+    {
+      name: "Afacad",
+      src: [
+        {
+          style: 'bold',
+          weight: '700',
+          path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2'
+        },
+      ],
+      preload: true,
+      display: "swap",
+      fallback: "sans-serif",
+      fallbackName: "Afacad override",
+      selector: ".custom_class",
+
+      // My Custom Fallback Font Name
+      fallbackName: "Afacad Override",
+
+    },
+    {
+      name: "Inter",
+      src: [
+        {
+          weight: '400',
+          style: 'normal',
+          path: join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf')
+        }
+      ],
+      preload: true,
+      display: "swap",
+      fallback: "serif",
+      cssVariable: "astro-font",
+
+      // My Custom Fallback Font Name
+      fallbackName: "Inter Custom Override",
+      
+    },
+  ]}
+/>
+```
