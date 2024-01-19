@@ -1,5 +1,3 @@
-/// <reference types="astro/astro-jsx" />
-
 import { create } from 'fontkit'
 import { join } from 'node:path'
 import { relative } from 'pathe'
@@ -7,18 +5,18 @@ import { Buffer } from 'node:buffer'
 import { getFallbackMetricsFromFontFile } from './font.ts'
 import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
-interface Record {
-  [property: string]: string
-}
+type GlobalValues = "inherit" | "initial" | "revert" | "revert-layer" | "unset"
+
+type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
 
 interface Source {
   path: string
-  css?: astroHTML.JSX.CSSProperties
+  css?: Record<string, string>
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-style
-  style: "normal" | "italic" | "oblique" | `oblique ${number}deg`
+  style: "normal" | "italic" | "oblique" | `oblique ${number}deg` | GlobalValues | {}
   preload?: boolean
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
-  weight?: "normal" | "bold" | "lighter" | "bolder" | "inherit" | "initial" | "revert" | "revert-layer" | "unset" | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | number
+  weight?: "normal" | "bold" | "lighter" | "bolder" | GlobalValues | FontWeight | `${FontWeight}` | {}
 }
 
 interface Config {
@@ -26,7 +24,7 @@ interface Config {
   src: Source[]
   fetch?: boolean
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
-  display: "auto" | "block" | "swap" | "fallback" | "optional"
+  display: "auto" | "block" | "swap" | "fallback" | "optional" | {}
   selector?: string
   preload?: boolean
   cacheDir?: string
@@ -35,7 +33,7 @@ interface Config {
   googleFontsURL?: string
   cssVariable?: string | boolean
   // https://developer.mozilla.org/fr/docs/Web/CSS/font-family
-  fallback: 'serif' | 'sans-serif' | 'monospace' | 'cursive' | 'fantasy' | 'system-ui' | 'emoji' | 'math' | 'fangsong' | 'inherit' | 'initial' | 'unset'
+  fallback: 'serif' | 'sans-serif'
 }
 
 export interface Props {
@@ -232,7 +230,7 @@ export async function generateFonts(fontCollection: Config[]): Promise<Config[]>
   return duplicatedCollection
 }
 
-async function getFallbackFont(fontCollection: Config): Promise<Record> {
+async function getFallbackFont(fontCollection: Config): Promise<Record<string, string>> {
   const fonts: any[] = []
   let writeAllowed, tmpDir, cachedFilePath, cacheDir
   const [os, fs] = await Promise.all([getOS(), getFS()])
