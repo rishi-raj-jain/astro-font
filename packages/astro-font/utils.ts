@@ -22,6 +22,7 @@ interface Config {
   src: Source[]
   fetch?: boolean
   display: string
+  verbose?: boolean
   selector?: string
   preload?: boolean
   cacheDir?: string
@@ -269,13 +270,17 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
         if (cacheDir) {
           if (!fs.existsSync(cacheDir)) {
             fs.mkdirSync(cacheDir)
-            console.log(`[astro-font] ▶ Created ${cacheDir}`)
+            if (fontCollection.verbose) {
+              console.log(`[astro-font] ▶ Created ${cacheDir}`)
+            }
           }
         }
         if (cachedFilePath) {
           if (!fs.existsSync(cachedFilePath)) {
             fs.writeFileSync(cachedFilePath, JSON.stringify(fallbackMetrics), 'utf8')
-            console.log(`[astro-font] ▶ Created ${cachedFilePath}`)
+            if (fontCollection.verbose) {
+              console.log(`[astro-font] ▶ Created ${cachedFilePath}`)
+            }
           }
         }
       }
