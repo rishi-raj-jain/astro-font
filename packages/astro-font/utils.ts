@@ -25,7 +25,6 @@ interface Config {
   fetch?: boolean
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
   display: "auto" | "block" | "swap" | "fallback" | "optional" | {}
-  display: string
   verbose?: boolean
   selector?: string
   preload?: boolean
