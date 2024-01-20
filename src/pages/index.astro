@@ -16,14 +16,15 @@ import { AstroFont } from 'astro-font'
           basePath: './public',
           src: [
             {
-              style: 'bold',
+              style: 'normal',
+              weight: 'bold',
               // (Optional) but ensures that it is preloaded
               preload: true,
               path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2',
             },
             {
-              weight: '500',
-              style: 'medium',
+              weight: 500,
+              style: 'normal',
               // (Optional) but does not preload this specifically
               preload: true,
               path: './public/fonts/Afacad-Medium.ttf',
