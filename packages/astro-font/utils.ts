@@ -324,7 +324,7 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
 export async function createFontCSS(fontCollection: Config): Promise<string> {
   const collection = []
   const fallbackFont = await getFallbackFont(fontCollection)
-  const fallbackName = `'${fontCollection.fallbackName || '_font_fallback_' + new Date().getTime()}'`
+  const fallbackName = `'${fontCollection.fallbackName || '_font_fallback_' + Math.floor(Math.random() * Date.now())}'`
   if (fontCollection.selector) {
     collection.push(fontCollection.selector)
     collection.push(`{`)
