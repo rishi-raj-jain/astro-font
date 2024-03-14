@@ -30,7 +30,7 @@ interface Config {
   fallbackName?: string
   googleFontsURL?: string
   cssVariable?: string | boolean
-  fallback: 'serif' | 'sans-serif'
+  fallback: 'serif' | 'sans-serif' | 'monospace'
 }
 
 export interface Props {
