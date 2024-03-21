@@ -18,6 +18,15 @@ yarn add astro-font
 pnpm add astro-font
 ```
 
+### With Cloudflare Workers
+
+`astro-font` uses the following node imports:
+
+- `node:path`
+- `node:buffer`
+
+To make sure that it works in Cloudflare Workers, please enable the `node_compatibiliy` flag per the guide https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-nodejs-with-workers.
+
 ## Google Fonts
 
 Automatically optimize any Google Font. To use the font in all your pages, add it to `<head>` file in an Astro layout:
