@@ -27,6 +27,11 @@ pnpm add astro-font
 
 To make sure that it works in Cloudflare Workers, please enable the `node_compatibiliy` flag per the guide https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-nodejs-with-workers.
 
+If the above guide fails to work, go to your **Cloudflare project > Settings > Functions > Compatibility flags** and add the flag (as follows).
+
+<img width="1214" alt="Screenshot 2024-03-21 at 7 39 51 AM" src="https://github.com/rishi-raj-jain/astro-font/assets/46300090/3572601b-ec47-4c8e-a9fd-f7cc51b60ff0">
+
+
 ## Google Fonts
 
 Automatically optimize any Google Font. To use the font in all your pages, add it to `<head>` file in an Astro layout:
