@@ -7,7 +7,7 @@ import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
 type GlobalValues = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset'
 
-type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
+type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | (number & {})
 
 interface Source {
   path: string
