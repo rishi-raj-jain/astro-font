@@ -5,23 +5,26 @@ import { Buffer } from 'node:buffer'
 import { getFallbackMetricsFromFontFile } from './font.ts'
 import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
-interface Record {
-  [property: string]: string
-}
+type GlobalValues = "inherit" | "initial" | "revert" | "revert-layer" | "unset"
+
+type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
 
 interface Source {
   path: string
-  css?: Record
-  style: string
+  css?: Record<string, string>
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/font-style
+  style: "normal" | "italic" | "oblique" | `oblique ${number}deg` | GlobalValues | {}
   preload?: boolean
-  weight?: string | number
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
+  weight?: "normal" | "bold" | "lighter" | "bolder" | GlobalValues | FontWeight | `${FontWeight}` | {}
 }
 
 interface Config {
   name: string
   src: Source[]
   fetch?: boolean
-  display: string
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
+  display: "auto" | "block" | "swap" | "fallback" | "optional" | {}
   verbose?: boolean
   selector?: string
   preload?: boolean
@@ -227,7 +230,7 @@ export async function generateFonts(fontCollection: Config[]): Promise<Config[]>
   return duplicatedCollection
 }
 
-async function getFallbackFont(fontCollection: Config): Promise<Record> {
+async function getFallbackFont(fontCollection: Config): Promise<Record<string, string>> {
   const fonts: any[] = []
   let writeAllowed, tmpDir, cachedFilePath, cacheDir
   const [os, fs] = await Promise.all([getOS(), getFS()])
@@ -256,7 +259,7 @@ async function getFallbackFont(fontCollection: Config): Promise<Record> {
           if (res) {
             fonts.push({
               style: i.style,
-              weight: i.weight,
+              weight: i.weight?.toString(),
               metadata: create(res),
             })
           }
