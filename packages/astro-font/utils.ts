@@ -7,8 +7,6 @@ import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
 type GlobalValues = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset'
 
-type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | (number & {})
-
 interface Source {
   path: string
   preload?: boolean
@@ -16,7 +14,7 @@ interface Source {
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-style
   style: 'normal' | 'italic' | 'oblique' | `oblique ${number}deg` | GlobalValues | (string & {})
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
-  weight?: 'normal' | 'bold' | 'lighter' | 'bolder' | GlobalValues | FontWeight | `${FontWeight}` | (string & {})
+  weight?: 'normal' | 'bold' | 'lighter' | 'bolder' | GlobalValues | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | (string & {}) | (number & {})
 }
 
 interface Config {
