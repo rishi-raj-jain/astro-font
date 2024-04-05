@@ -5,26 +5,24 @@ import { Buffer } from 'node:buffer'
 import { getFallbackMetricsFromFontFile } from './font.ts'
 import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
-type GlobalValues = "inherit" | "initial" | "revert" | "revert-layer" | "unset"
+type GlobalValues = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset'
 
 type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
 
 interface Source {
   path: string
+  preload?: boolean
   css?: Record<string, string>
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-style
-  style: "normal" | "italic" | "oblique" | `oblique ${number}deg` | GlobalValues | {}
-  preload?: boolean
+  style: 'normal' | 'italic' | 'oblique' | `oblique ${number}deg` | GlobalValues | {}
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
-  weight?: "normal" | "bold" | "lighter" | "bolder" | GlobalValues | FontWeight | `${FontWeight}` | {}
+  weight?: 'normal' | 'bold' | 'lighter' | 'bolder' | GlobalValues | FontWeight | `${FontWeight}` | {}
 }
 
 interface Config {
   name: string
   src: Source[]
   fetch?: boolean
-  // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
-  display: "auto" | "block" | "swap" | "fallback" | "optional" | {}
   verbose?: boolean
   selector?: string
   preload?: boolean
@@ -34,6 +32,8 @@ interface Config {
   googleFontsURL?: string
   cssVariable?: string | boolean
   fallback: 'serif' | 'sans-serif' | 'monospace'
+  // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
+  display: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' | {}
 }
 
 export interface Props {
@@ -41,10 +41,10 @@ export interface Props {
 }
 
 const extToPreload = {
-  woff: 'font/woff',
-  woff2: 'font/woff2',
   ttf: 'font/ttf',
   otf: 'font/otf',
+  woff: 'font/woff',
+  woff2: 'font/woff2',
   eot: 'application/vnd.ms-fontobject',
 }
 
