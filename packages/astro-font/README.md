@@ -18,6 +18,43 @@ yarn add astro-font
 pnpm add astro-font
 ```
 
+### With Cloudflare Workers
+
+`astro-font` uses the following node imports:
+
+- `node:path`
+- `node:buffer`
+
+#### Step 1. Enable nodejs_compat
+
+To make sure that it works in Cloudflare Workers, please enable the `node_compatibiliy` flag per the guide https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-nodejs-with-workers.
+
+If the above guide fails to work, go to your **Cloudflare project > Settings > Functions > Compatibility flags** and add the flag (as follows).
+
+<img width="1214" alt="Screenshot 2024-03-21 at 7 39 51 AM" src="https://github.com/rishi-raj-jain/astro-font/assets/46300090/3572601b-ec47-4c8e-a9fd-f7cc51b60ff0">
+
+#### Step 2. Opt out of bundling Node.js built-ins
+
+Per [Astro + Cloudflare docs](https://docs.astro.build/en/guides/integrations-guide/cloudflare/#nodejs-compatibility), you'd need to modify the vite configuration to allow for the node:* import syntax:
+
+```diff
+// File: astro.config.mjs
+
+import { defineConfig } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
+
+// https://astro.build/config
+export default defineConfig({
+    output: 'server',
+    adapter: cloudflare(),
++    vite: {
++        ssr: {
++            external: ['node:buffer', 'node:path', 'node:fs', 'node:os'],
++        },
++    },
+});
+```
+
 ## Google Fonts
 
 Automatically optimize any Google Font. To use the font in all your pages, add it to `<head>` file in an Astro layout:
