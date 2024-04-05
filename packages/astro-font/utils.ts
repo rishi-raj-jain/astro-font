@@ -14,9 +14,9 @@ interface Source {
   preload?: boolean
   css?: Record<string, string>
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-style
-  style: 'normal' | 'italic' | 'oblique' | `oblique ${number}deg` | GlobalValues | {}
+  style: 'normal' | 'italic' | 'oblique' | `oblique ${number}deg` | GlobalValues | (string & {})
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
-  weight?: 'normal' | 'bold' | 'lighter' | 'bolder' | GlobalValues | FontWeight | `${FontWeight}` | {}
+  weight?: 'normal' | 'bold' | 'lighter' | 'bolder' | GlobalValues | FontWeight | `${FontWeight}` | (string & {})
 }
 
 interface Config {
@@ -33,7 +33,7 @@ interface Config {
   cssVariable?: string | boolean
   fallback: 'serif' | 'sans-serif' | 'monospace'
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
-  display: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' | {}
+  display: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' | (string & {})
 }
 
 export interface Props {
