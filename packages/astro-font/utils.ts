@@ -173,23 +173,23 @@ function parseGoogleCSS(tmp: string) {
     const fontFaceRule = match[1]
     const fontFaceObject: any = {}
     fontFaceRule.split(';').forEach((property) => {
-      if (property.includes('src: ')) {
-        const formatPosition = property.indexOf('for')
-        fontFaceObject['path'] = property
-          .trim()
-          .substring(9, formatPosition ? formatPosition - 5 : property.length - 1)
-          .trim()
+      if (property.includes('src') && property.includes('url')) {
+        try {
+          fontFaceObject['path'] = property
+            .trim()
+            .split(/\(|\)|(url\()/)
+            .find((each) => each.trim().includes('https:'))
+            ?.trim()
+        } catch (e) {}
       }
-      if (property.includes('-style: ')) {
+      if (property.includes('-style')) {
         fontFaceObject['style'] = property.split(':').map((i) => i.trim())[1]
       }
-      if (property.includes('-weight: ')) {
+      if (property.includes('-weight')) {
         fontFaceObject['weight'] = property.split(':').map((i) => i.trim())[1]
       }
-      if (property.includes('unicode-range: ')) {
-        if (!fontFaceObject['css']) {
-          fontFaceObject['css'] = {}
-        }
+      if (property.includes('unicode-range')) {
+        if (!fontFaceObject['css']) fontFaceObject['css'] = {}
         fontFaceObject['css']['unicode-range'] = property.split(':').map((i) => i.trim())[1]
       }
     })
@@ -205,7 +205,12 @@ export async function generateFonts(fontCollection: Config[]): Promise<Config[]>
   await Promise.all(
     duplicatedCollection.map((config) =>
       config.googleFontsURL
-        ? fetch(config.googleFontsURL)
+        ? fetch(config.googleFontsURL, {
+            headers: {
+              'User-Agent':
+                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+            },
+          })
             .then((res) => res.text())
             .then((res) => {
               config.src = parseGoogleCSS(res)
