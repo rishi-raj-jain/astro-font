@@ -262,11 +262,19 @@ async function getFallbackFont(fontCollection: Config): Promise<Record<string, s
       fontCollection.src.map((i) =>
         getFontBuffer(i.path).then((res) => {
           if (res) {
-            fonts.push({
-              style: i.style,
-              weight: i.weight?.toString(),
-              metadata: create(res),
-            })
+            try {
+              const resMetadata = create(res)
+              fonts.push({
+                style: i.style,
+                weight: i.weight?.toString(),
+                metadata: resMetadata,
+              })
+            } catch (e) {
+              if (fontCollection.verbose) {
+                console.log(`[astro-font] ▶`)
+                console.error(e)
+              }
+            }
           }
         }),
       ),

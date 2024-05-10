@@ -4,15 +4,17 @@
     "dev": "astro dev",
     "build": "pnpm build:astro-font && astro build",
     "build:astro-font": "cd packages/astro-font && pnpm build",
-    "fmt": "prettier --write '**/*' --ignore-unknown"
+    "fmt": "prettier --write '**/*' --ignore-unknown",
+    "preview": "wrangler pages dev ./dist --node-compat"
   },
   "devDependencies": {
     "prettier": "^3.1.1",
     "prettier-plugin-astro": "^0.12.2"
   },
   "dependencies": {
-    "astro": "latest",
+    "@astrojs/cloudflare": "^10.2.5",
     "@astrojs/vercel": "latest",
+    "astro": "latest",
     "astro-font": "workspace:./packages/astro-font"
   }
 }
