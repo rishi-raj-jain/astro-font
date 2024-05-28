@@ -49,11 +49,9 @@ export default defineConfig({
     adapter: cloudflare(),
 +    vite: {
 +        ssr: {
-+          external: ['node:buffer', 'node:path', 'node:fs', 'node:os', 'node:crypto'],
++          external: ["buffer", "path", "fs", "os", "crypto", "async_hooks"].map((i) => `node:${i}`),
 +        },
-+        resolve: {
-+          alias: { path: 'node:path', fs: 'node:fs', os: 'node:os', crypto: 'node:crypto' },
-+        },
++        // make sure to use node:fs, node:path, or node:os if you are using it in your project instead of fs, path or os
 +    },
 });
 ```
