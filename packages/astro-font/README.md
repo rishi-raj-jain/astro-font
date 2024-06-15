@@ -18,82 +18,6 @@ yarn add astro-font
 pnpm add astro-font
 ```
 
-### With Cloudflare Workers
-
-`astro-font` uses the following node imports:
-
-- `node:path`
-- `node:buffer`
-
-#### Step 1. Enable nodejs_compat
-
-To make sure that it works in Cloudflare Workers, please enable the `node_compatibiliy` flag per the guide https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-nodejs-with-workers.
-
-If the above guide fails to work, go to your **Cloudflare project > Settings > Functions > Compatibility flags** and add the flag (as follows).
-
-<img width="1214" alt="Screenshot 2024-03-21 at 7 39 51 AM" src="https://github.com/rishi-raj-jain/astro-font/assets/46300090/3572601b-ec47-4c8e-a9fd-f7cc51b60ff0">
-
-#### Step 2. Opt out of bundling Node.js built-ins
-
-Per [Astro + Cloudflare docs](https://docs.astro.build/en/guides/integrations-guide/cloudflare/#nodejs-compatibility), you'd need to modify the vite configuration to allow for the node:* import syntax:
-
-```diff
-// File: astro.config.mjs
-
-import { defineConfig } from 'astro/config';
-import cloudflare from '@astrojs/cloudflare';
-
-// https://astro.build/config
-export default defineConfig({
-    output: 'server',
-    adapter: cloudflare(),
-+    vite: {
-+        ssr: {
-+          external: ["buffer", "path", "fs", "os", "crypto", "async_hooks"].map((i) => `node:${i}`),
-+        },
-+        // make sure to use node:fs, node:path, or node:os if you are using it in your project instead of fs, path or os
-+    },
-});
-```
-
-### Step 3. Use local fonts over CDN in case of Astro Server-Side Rendering with Cloudflare
-
-As there's no access to the files in the `public` directory in the Cloudflare Pages (server-side render) context, you'd want to use fonts over CDN. To make the developer experience painless, use the following code snippet while setting up local fonts with Cloudflare in Astro:
-
-```astro
----
-import { join } from "node:path";
-import { AstroFont } from "astro-font";
-
-const fontPrefix = import.meta.env.PROD
-  ? Astro.site.toString()
-  : join(process.cwd(), "public");
----
-
-<AstroFont
-    config={[
-        {
-            name: "Editorial New",
-            src: [
-                {
-                    style: "italic",
-                    weight: "500",
-                    path: join(
-                        fontPrefix,
-                        "fonts",
-                        "PPEditorialNew-MediumItalic.woff2"
-                    ),
-                },
-            ],
-            preload: true,
-            display: "swap",
-            selector: "body",
-            fallback: "sans-serif",
-        }
-    ]}
-/>
-```
-
 ## Google Fonts
 
 Automatically optimize any Google Font. To use the font in all your pages, add it to `<head>` file in an Astro layout:
@@ -388,6 +312,82 @@ import { join } from "node:path"
       
     },
   ]}
+/>
+```
+
+### With Cloudflare Workers
+
+`astro-font` uses the following node imports:
+
+- `node:path`
+- `node:buffer`
+
+#### Step 1. Enable nodejs_compat
+
+To make sure that it works in Cloudflare Workers, please enable the `node_compatibiliy` flag per the guide https://developers.cloudflare.com/workers/runtime-apis/nodejs/#enable-nodejs-with-workers.
+
+If the above guide fails to work, go to your **Cloudflare project > Settings > Functions > Compatibility flags** and add the flag (as follows).
+
+<img width="1214" alt="Screenshot 2024-03-21 at 7 39 51 AM" src="https://github.com/rishi-raj-jain/astro-font/assets/46300090/3572601b-ec47-4c8e-a9fd-f7cc51b60ff0">
+
+#### Step 2. Opt out of bundling Node.js built-ins
+
+Per [Astro + Cloudflare docs](https://docs.astro.build/en/guides/integrations-guide/cloudflare/#nodejs-compatibility), you'd need to modify the vite configuration to allow for the node:* import syntax:
+
+```diff
+// File: astro.config.mjs
+
+import { defineConfig } from 'astro/config';
+import cloudflare from '@astrojs/cloudflare';
+
+// https://astro.build/config
+export default defineConfig({
+    output: 'server',
+    adapter: cloudflare(),
++    vite: {
++        ssr: {
++          external: ["buffer", "path", "fs", "os", "crypto", "async_hooks"].map((i) => `node:${i}`),
++        },
++        // make sure to use node:fs, node:path, or node:os if you are using it in your project instead of fs, path or os
++    },
+});
+```
+
+### Step 3. Use local fonts over CDN in case of Astro Server-Side Rendering with Cloudflare
+
+As there's no access to the files in the `public` directory in the Cloudflare Pages (server-side render) context, you'd want to use fonts over CDN. To make the developer experience painless, use the following code snippet while setting up local fonts with Cloudflare in Astro:
+
+```astro
+---
+import { join } from "node:path";
+import { AstroFont } from "astro-font";
+
+const fontPrefix = import.meta.env.PROD
+  ? Astro.site.toString()
+  : join(process.cwd(), "public");
+---
+
+<AstroFont
+    config={[
+        {
+            name: "Editorial New",
+            src: [
+                {
+                    style: "italic",
+                    weight: "500",
+                    path: join(
+                        fontPrefix,
+                        "fonts",
+                        "PPEditorialNew-MediumItalic.woff2"
+                    ),
+                },
+            ],
+            preload: true,
+            display: "swap",
+            selector: "body",
+            fallback: "sans-serif",
+        }
+    ]}
 />
 ```
 
