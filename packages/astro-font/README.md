@@ -56,6 +56,44 @@ export default defineConfig({
 });
 ```
 
+### Step 3. Use local fonts over CDN in case of Astro Server-Side Rendering with Cloudflare
+
+As there's no access to the files in the `public` directory in the Cloudflare Pages (server-side render) context, you'd want to use fonts over CDN. To make the developer experience painless, use the following code snippet while setting up local fonts with Cloudflare in Astro:
+
+```astro
+---
+import { join } from "node:path";
+import { AstroFont } from "astro-font";
+
+const fontPrefix = import.meta.env.PROD
+  ? Astro.site.toString()
+  : join(process.cwd(), "public");
+---
+
+<AstroFont
+    config={[
+        {
+            name: "Editorial New",
+            src: [
+                {
+                    style: "italic",
+                    weight: "500",
+                    path: join(
+                        fontPrefix,
+                        "fonts",
+                        "PPEditorialNew-MediumItalic.woff2"
+                    ),
+                },
+            ],
+            preload: true,
+            display: "swap",
+            selector: "body",
+            fallback: "sans-serif",
+        }
+    ]}
+/>
+```
+
 ## Google Fonts
 
 Automatically optimize any Google Font. To use the font in all your pages, add it to `<head>` file in an Astro layout:
