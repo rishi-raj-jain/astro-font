@@ -11,4 +11,4 @@ const styles = Promise.all([...resolvedConfig.map(createBaseCSS), ...resolvedCon
 ---
 
 {preloads.flat().map((content) => <link as="font" crossorigin rel="preload" href={content} type={getPreloadType(content)} />)}
-{styles.then((res) => <style set:html={res.flat().reduce((total, content) => `${total}\n${content}`, '')} is:inline />).catch(console.log)}
+{styles.then((res) => <style set:html={res.flat().reduce((total, content) => total ? `${total}\n${content}` : content, '')} is:inline />).catch(console.log)}
