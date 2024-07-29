@@ -7,10 +7,8 @@ const { config } = Astro.props as Props
 const resolvedConfig = await generateFonts(config)
 
 const preloads = resolvedConfig.map(createPreloads)
-const baseCSS = Promise.all(resolvedConfig.map(createBaseCSS))
-const fallbackCSS = Promise.all(resolvedConfig.map(createFontCSS))
+const styles = Promise.all([...resolvedConfig.map(createBaseCSS), ...resolvedConfig.map(createFontCSS)])
 ---
 
 {preloads.flat().map((content) => <link as="font" crossorigin rel="preload" href={content} type={getPreloadType(content)} />)}
-{baseCSS.then((res) => res.flat().map((content) => <style set:html={content} is:inline />)).catch(console.log)}
-{fallbackCSS.then((res) => res.flat().map((content) => <style set:html={content} is:inline />)).catch(console.log)}
+{styles.then((res) => <style set:html={res.flat().join(' ')} is:inline />).catch(console.log)}
