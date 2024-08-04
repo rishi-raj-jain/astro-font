@@ -7,16 +7,14 @@ import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
 type GlobalValues = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset'
 
-type FontWeight = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900
-
 interface Source {
   path: string
   preload?: boolean
   css?: Record<string, string>
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-style
-  style: 'normal' | 'italic' | 'oblique' | `oblique ${number}deg` | GlobalValues | {}
+  style: 'normal' | 'italic' | 'oblique' | `oblique ${number}deg` | GlobalValues | (string & {})
   // https://developer.mozilla.org/en-US/docs/Web/CSS/font-weight
-  weight?: 'normal' | 'bold' | 'lighter' | 'bolder' | GlobalValues | FontWeight | `${FontWeight}` | {}
+  weight?: 'normal' | 'bold' | 'lighter' | 'bolder' | GlobalValues | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | "100" | "200" | "300" | "400" | "500" | "600" | "700" | "800" | "900" | (string & {}) | (number & {})
 }
 
 interface Config {
@@ -33,7 +31,7 @@ interface Config {
   cssVariable?: string | boolean
   fallback: 'serif' | 'sans-serif' | 'monospace'
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
-  display: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' | {}
+  display: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' | (string & {})
 }
 
 export interface Props {
