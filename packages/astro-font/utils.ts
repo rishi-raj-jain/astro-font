@@ -53,7 +53,7 @@ function getBasePath(src?: string) {
 }
 
 export function getRelativePath(from: string, to: string) {
-  if (to.includes('https')) return to
+  if (to.includes('https:') || to.includes('http:')) return to
   return '/' + relative(from, to)
 }
 
@@ -97,7 +97,7 @@ export function getPreloadType(src: string) {
 // Get the font whether remote or local buffer
 async function getFontBuffer(path: string): Promise<Buffer | undefined> {
   const fs = await getFS()
-  if (path.includes('https://')) {
+  if (path.includes('https:') || path.includes('http:')) {
     let tmp = await fetch(path)
     return Buffer.from(await tmp.arrayBuffer())
   } else {
