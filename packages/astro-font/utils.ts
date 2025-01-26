@@ -103,7 +103,7 @@ async function ifFSOSWrites(dir: string): Promise<string | undefined> {
     const fs = await getFS()
     if (fs) {
       const testDir = join(dir, '.astro_font')
-      if (!fs.existsSync(testDir)) fs.mkdirSync(testDir)
+      if (!fs.existsSync(testDir)) fs.mkdirSync(testDir, { recursive: true })
       fs.rmSync(testDir, { recursive: true, force: true })
       return dir
     }
@@ -170,7 +170,7 @@ async function createFontFiles(fontPath: [number, number, string, string]): Prom
 
   // By now, we can do anything with fs, hence proceed with creating the folder
   if (!fs.existsSync(generatedFolderPath)) {
-    fs.mkdirSync(generatedFolderPath)
+    fs.mkdirSync(generatedFolderPath, { recursive: true })
     console.log(`[astro-font] ▶ Created ${generatedFolderPath}`)
   }
 
@@ -308,7 +308,7 @@ async function getFallbackFont(fontCollection: Config): Promise<Record<string, s
       if (tmpDir) {
         if (cacheDir) {
           if (!fs.existsSync(cacheDir)) {
-            fs.mkdirSync(cacheDir)
+            fs.mkdirSync(cacheDir, { recursive: true })
             if (fontCollection.verbose) {
               console.log(`[astro-font] ▶ Created ${cacheDir}`)
             }

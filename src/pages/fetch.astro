@@ -1,0 +1,60 @@
+---
+import { AstroFont } from 'astro-font'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Welcome to Astro</title>
+    <AstroFont
+      config={[
+        {
+          // font-name to be used when generating the CSS
+          name: 'Afacad',
+          // Fetch from CDN to localize (from issue https://github.com/rishi-raj-jain/astro-font/issues/28)
+          fetch: true,
+          // Optional (needs to be set for workspaces as the project's basePath+public dir, from issue https://github.com/rishi-raj-jain/astro-font/issues/28)
+          basePath: './public/demo',
+          src: [
+            {
+              style: 'normal',
+              weight: 'bold',
+              // (Optional) but ensures that it is preloaded
+              preload: true,
+              path: 'https://fonts.gstatic.com/s/afacad/v1/6NUK8FKMIQOGaw6wjYT7ZHG_zsBBfvLqagk-80KjZfJ_uw.woff2',
+            },
+            {
+              weight: 500,
+              style: 'normal',
+              // (Optional) but does not preload this specifically
+              preload: true,
+              path: './public/fonts/Afacad-Medium.ttf',
+            },
+            {
+              weight: '400',
+              style: 'normal',
+              path: './public/fonts/Afacad-Regular.ttf',
+              // Some other properties to be used with the this particular font
+              css: {
+                'font-feature-settings': 'normal',
+              },
+            },
+          ],
+          // Whether to preload the font in the output HTML
+          preload: true,
+          // Whether to swap the display
+          display: 'swap',
+          // Where to apply this whole font (using CSS selector)
+          // selector: 'random_stuff',
+          // What kind of fallback to use: serif or sans-serif
+          fallback: 'sans-serif',
+          // emit css variable
+          cssVariable: 'random-var-name',
+          // cssVariable: true --> emits the default `--astro-font` to the root selector
+        },
+      ]}
+    />
+  </head>
+  <body><span style="font-family: var(--random-var-name);">Hello world!</span></body>
+</html>
