@@ -348,7 +348,7 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
       const cssProperties = Object.entries(i.css || {}).map(([key, value]) => `${key}: ${value}`)
       if (i.weight) cssProperties.push(`font-weight: ${i.weight}`)
       if (i.style) cssProperties.push(`font-style: ${i.style}`)
-      if (fontCollection.name) cssProperties.push(`font-family: ${fontCollection.name}`)
+      if (fontCollection.name) cssProperties.push(`font-family: '${fontCollection.name}'`)
       if (fontCollection.display) cssProperties.push(`font-display: ${fontCollection.display}`)
       cssProperties.push(`src: url(${getRelativePath(getBasePath(fontCollection.basePath), i.path)})`)
       return `@font-face {${cssProperties.join(';')}}`
@@ -370,14 +370,14 @@ export async function createFontCSS(fontCollection: Config): Promise<string> {
   }
   if (Object.keys(fallbackFont).length > 0) {
     if (fontCollection.selector) {
-      collection.push(`font-family: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback};`)
+      collection.push(`font-family: '${fontCollection.name}', ${fallbackName}, ${fontCollection.fallback};`)
       collection.push(`}`)
     }
     if (typeof fontCollection.cssVariable === 'boolean' && fontCollection.cssVariable) {
-      collection.push(`:root{ --astro-font: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`)
+      collection.push(`:root{ --astro-font: '${fontCollection.name}', ${fallbackName}, ${fontCollection.fallback}; }`)
     } else if (typeof fontCollection.cssVariable === 'string' && fontCollection.cssVariable.length > 0) {
       collection.push(
-        `:root{ --${fontCollection.cssVariable}: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`,
+        `:root{ --${fontCollection.cssVariable}: '${fontCollection.name}', ${fallbackName}, ${fontCollection.fallback}; }`,
       )
     }
     collection.push(`@font-face`)
@@ -391,14 +391,14 @@ export async function createFontCSS(fontCollection: Config): Promise<string> {
     collection.push(`}`)
   } else {
     if (fontCollection.selector) {
-      collection.push(`font-family: ${fontCollection.name}, ${fontCollection.fallback};`)
+      collection.push(`font-family: '${fontCollection.name}', ${fontCollection.fallback};`)
       collection.push(`}`)
     }
     if (typeof fontCollection.cssVariable === 'boolean' && fontCollection.cssVariable) {
-      collection.push(`:root{ --astro-font: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`)
+      collection.push(`:root{ --astro-font: '${fontCollection.name}', ${fallbackName}, ${fontCollection.fallback}; }`)
     } else if (typeof fontCollection.cssVariable === 'string' && fontCollection.cssVariable.length > 0) {
       collection.push(
-        `:root{ --${fontCollection.cssVariable}: ${fontCollection.name}, ${fallbackName}, ${fontCollection.fallback}; }`,
+        `:root{ --${fontCollection.cssVariable}: '${fontCollection.name}', ${fallbackName}, ${fontCollection.fallback}; }`,
       )
     }
   }
