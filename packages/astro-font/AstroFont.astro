@@ -1,10 +1,21 @@
 ---
-import type { Props } from './dist/utils'
+import type { Config } from './dist/utils'
 import { generateFonts, getPreloadType, createPreloads, createBaseCSS, createFontCSS } from './dist/utils'
 
-const { config } = Astro.props as Props
+interface Props {
+  config: Config[];
+  assetsPrefix?: string;
+}
 
-const resolvedConfig = await generateFonts(config)
+const { config: originalConfig, assetsPrefix } = Astro.props as Props
+
+const configWithPrefix: Config[] = originalConfig.map(conf => ({
+  ...conf,
+  // Add the assetsPrefix passed to the component to each font config
+  assetsPrefix: assetsPrefix,
+}));
+
+const resolvedConfig = await generateFonts(configWithPrefix)
 
 const preloads = resolvedConfig.map(createPreloads)
 const styles = Promise.all([...resolvedConfig.map(createBaseCSS), ...resolvedConfig.map(createFontCSS)])
