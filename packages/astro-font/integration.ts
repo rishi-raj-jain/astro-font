@@ -1,4 +1,5 @@
 import type { AstroIntegration } from 'astro'
+import { fileURLToPath } from 'node:url'
 
 export function astroFont(): AstroIntegration {
   let publicDirectory = './public'
@@ -11,8 +12,8 @@ export function astroFont(): AstroIntegration {
       },
       'astro:build:done': async ({ dir }) => {
         const { existsSync, cpSync, readdirSync } = await import('node:fs')
-        const { join } = await import('node:path')
-        const buildDir = dir.pathname
+        const { join, resolve } = await import('node:path')
+        const buildDir = resolve(fileURLToPath(dir))
         function findAndCopyFontDirs(currentDir: string, relPath: string = '') {
           const entries = readdirSync(currentDir, { withFileTypes: true })
           for (const entry of entries) {
@@ -20,7 +21,7 @@ export function astroFont(): AstroIntegration {
             const relativePath = join(relPath, entry.name)
             if (entry.isDirectory()) {
               if (entry.name === '__astro_font_generated__') {
-                const targetPath = join(buildDir, relativePath)
+                const targetPath = resolve(buildDir, relativePath)
                 cpSync(fullPath, targetPath, { recursive: true })
               } else findAndCopyFontDirs(fullPath, relativePath)
             }
