@@ -57,6 +57,7 @@ interface Config {
   fallback: 'serif' | 'sans-serif' | 'monospace'
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
   display: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' | (string & {})
+  assetsPrefix?: string
 }
 
 export interface Props {
@@ -72,7 +73,25 @@ const extToPreload = {
 }
 
 function getBasePath(src?: string) {
-  return src || './public'
+  return src || './public';
+}
+
+export function generatePublicUrl(localPath: string, basePath: string, assetsPrefix?: string): string {
+  if (localPath.startsWith('https:') || localPath.startsWith('http:')) {
+    return localPath;
+  }
+  // Calculate relative path using the logic similar to the original getRelativePath
+  const pathRelativeToPublic = relative(basePath, localPath);
+
+  if (assetsPrefix) {
+    // Ensure prefix ends with a slash and relative path doesn't start with one
+    const normalizedPrefix = assetsPrefix.endsWith('/') ? assetsPrefix : assetsPrefix + '/';
+    const normalizedRelative = pathRelativeToPublic.startsWith('/') ? pathRelativeToPublic.substring(1) : pathRelativeToPublic;
+    return normalizedPrefix + normalizedRelative;
+  } else {
+    // Original behavior: return root-relative path, ensuring it starts with '/'
+    return '/' + (pathRelativeToPublic.startsWith('/') ? pathRelativeToPublic.substring(1) : pathRelativeToPublic);
+  }
 }
 
 export function getRelativePath(from: string, to: string) {
@@ -337,27 +356,29 @@ async function getFallbackFont(fontCollection: Config): Promise<Record<string, s
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  // If the parent preload is set to be false, look for true only preload values
-  if (fontCollection.preload === false) {
-    return fontCollection.src
-      .filter((i) => i.preload === true)
-      .map((i) => getRelativePath(getBasePath(fontCollection.basePath), i.path))
-  }
-  // If the parent preload is set to be true (or not defined), look for non-false values
-  return fontCollection.src
-    .filter((i) => i.preload !== false)
-    .map((i) => getRelativePath(getBasePath(fontCollection.basePath), i.path))
+  const effectiveBasePath = getBasePath(fontCollection.basePath);
+  const sourcesToPreload = fontCollection.preload === false
+    ? fontCollection.src.filter((i) => i.preload === true)
+    : fontCollection.src.filter((i) => i.preload !== false);
+
+  // Generate public URLs using the new function
+  return sourcesToPreload.map((i) =>
+    generatePublicUrl(i.path, effectiveBasePath, fontCollection.assetsPrefix)
+  );
 }
 
 export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
   try {
+    const effectiveBasePath = getBasePath(fontCollection.basePath); 
     const tmp = fontCollection.src.map((i) => {
       const cssProperties = Object.entries(i.css || {}).map(([key, value]) => `${key}: ${value}`)
       if (i.weight) cssProperties.push(`font-weight: ${i.weight}`)
       if (i.style) cssProperties.push(`font-style: ${i.style}`)
       if (fontCollection.name) cssProperties.push(`font-family: '${fontCollection.name}'`)
       if (fontCollection.display) cssProperties.push(`font-display: ${fontCollection.display}`)
-      cssProperties.push(`src: url(${getRelativePath(getBasePath(fontCollection.basePath), i.path)})`)
+      
+      const publicUrl = generatePublicUrl(i.path, effectiveBasePath, fontCollection.assetsPrefix);
+      cssProperties.push(`src: url(${publicUrl})`);
       return `@font-face {${cssProperties.join(';')}}`
     })
     return tmp
