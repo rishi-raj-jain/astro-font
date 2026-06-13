@@ -1,3 +1,5 @@
+[![Sponsor](https://readme.cash/i/hoxp2mv3e8.svg)](https://readme.cash/c/hoxp2mv3e8)
+
 ![imgonline-com-ua-compressed-gtwH4Klu9j](https://github.com/rishi-raj-jain/astro-font/assets/46300090/6a9588d0-50b9-4ade-91ee-76c7a201e1a6)
 
 # Astro Font Optimization
