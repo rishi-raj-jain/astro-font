@@ -2,9 +2,14 @@
 import type { Props } from './dist/utils'
 import { generateFonts, getPreloadType, createPreloads, createBaseCSS, createFontCSS } from './dist/utils'
 
-const { config } = Astro.props as Props
+const { config, assetsPrefix } = Astro.props as Props
 
-const resolvedConfig = await generateFonts(config)
+const configWithPrefix = config.map((entry) => ({
+  ...entry,
+  assetsPrefix: entry.assetsPrefix ?? assetsPrefix,
+}))
+
+const resolvedConfig = await generateFonts(configWithPrefix)
 
 const preloads = resolvedConfig.flatMap(createPreloads)
 const styles = (

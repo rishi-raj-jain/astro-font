@@ -1,0 +1,70 @@
+---
+import { join } from 'node:path'
+import { AstroFont } from 'astro-font'
+
+// Example CDN or Astro build.assetsPrefix value
+const assetsPrefix = import.meta.env.PUBLIC_ASSETS_PREFIX ?? 'https://cdn.example.com/assets'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>assetsPrefix demo | astro-font</title>
+    <AstroFont
+      assetsPrefix={assetsPrefix}
+      config={[
+        {
+          name: 'Afacad',
+          basePath: './public',
+          src: [
+            {
+              style: 'normal',
+              weight: '400',
+              preload: true,
+              path: join(process.cwd(), 'public', 'fonts', 'Afacad-Regular.ttf'),
+            },
+          ],
+          preload: true,
+          display: 'swap',
+          fallback: 'sans-serif',
+          cssVariable: 'font-afacad',
+        },
+        {
+          name: 'Inter',
+          basePath: './public',
+          // Per-font prefix overrides the component-level assetsPrefix
+          assetsPrefix: 'https://cdn.example.com/fonts-only',
+          src: [
+            {
+              style: 'normal',
+              weight: '400',
+              path: join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf'),
+            },
+          ],
+          preload: false,
+          display: 'swap',
+          fallback: 'serif',
+          cssVariable: 'font-inter',
+        },
+      ]}
+    />
+  </head>
+  <body>
+    <main style="font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; line-height: 1.6;">
+      <h1 style="font-family: var(--font-afacad), sans-serif;">assetsPrefix demo</h1>
+      <p>
+        This page sets <code>assetsPrefix={assetsPrefix}</code> on <code>&lt;AstroFont /&gt;</code>.
+        Inspect the generated <code>&lt;link rel="preload"&gt;</code> and <code>&lt;style&gt;</code> tags —
+        local font URLs are prefixed for CDN or subpath deployments.
+      </p>
+      <p style="font-family: var(--font-inter), serif;">
+        The Inter font uses a per-config <code>assetsPrefix</code> override:
+        <code>https://cdn.example.com/fonts-only</code>.
+      </p>
+      <p>
+        Set <code>PUBLIC_ASSETS_PREFIX</code> in <code>.env</code> to try a custom prefix locally.
+      </p>
+    </main>
+  </body>
+</html>
