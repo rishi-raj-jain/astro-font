@@ -121,13 +121,17 @@ export function getPreloadType(src: string) {
 async function getFontBuffer(path: string): Promise<Buffer | undefined> {
   const fs = await getFS()
   if (path.includes('https:') || path.includes('http:')) {
-    let tmp = await fetch(path)
-    return Buffer.from(await tmp.arrayBuffer())
-  } else {
-    // If the file system has the access to the *local* font
-    if (fs && fs.existsSync(path)) {
-      return fs.readFileSync(path)
+    try {
+      const response = await fetch(path)
+      if (!response.ok) return undefined
+      return Buffer.from(await response.arrayBuffer())
+    } catch {
+      return undefined
     }
+  }
+  // If the file system has the access to the *local* font
+  if (fs && fs.existsSync(path)) {
+    return fs.readFileSync(path)
   }
 }
 
@@ -221,25 +225,39 @@ function parseGoogleCSS(tmp: string) {
   return fontFaceMatches
 }
 
+const googleFontsUserAgent =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+
+async function fetchGoogleFontsCSS(config: Config): Promise<Source[]> {
+  const response = await fetch(config.googleFontsURL!, {
+    headers: { 'User-Agent': googleFontsUserAgent },
+  })
+  if (!response.ok) throw new Error(`HTTP ${response.status}`)
+  const parsed = parseGoogleCSS(await response.text())
+  if (parsed.length === 0) throw new Error('No @font-face rules found in Google Fonts CSS')
+  return parsed
+}
+
+function getConfiguredFontStack(fontCollection: Config) {
+  return `'${fontCollection.name}', ${fontCollection.fallback}`
+}
+
 // Function to generate the final destination of the fonts and consume further
 export async function generateFonts(fontCollection: Config[]): Promise<Config[]> {
   const duplicatedCollection = [...fontCollection]
   // Pre-operation to parse and insert google fonts in the src array
   await Promise.all(
-    duplicatedCollection.map((config) =>
-      config.googleFontsURL
-        ? fetch(config.googleFontsURL, {
-            headers: {
-              'User-Agent':
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-            },
-          })
-            .then((res) => res.text())
-            .then((res) => {
-              config.src = parseGoogleCSS(res)
-            })
-        : {},
-    ),
+    duplicatedCollection.map(async (config) => {
+      if (!config.googleFontsURL) return
+      try {
+        config.src = await fetchGoogleFontsCSS(config)
+      } catch (error) {
+        console.warn(
+          `[astro-font] Failed to fetch Google Fonts for "${config.name}", using ${config.fallback} fallback`,
+        )
+        if (config.verbose) console.warn(error)
+      }
+    }),
   )
   const indicesMatrix: [number, number, string, string][] = []
   duplicatedCollection.forEach((config, i) => {
@@ -397,16 +415,15 @@ export async function createFontCSS(fontCollection: Config): Promise<string> {
     collection.push(`line-gap-override: ${fallbackFont.lineGapOverride};`)
     collection.push(`}`)
   } else {
+    const fontStack = getConfiguredFontStack(fontCollection)
     if (fontCollection.selector) {
-      collection.push(`font-family: '${fontCollection.name}', ${fontCollection.fallback};`)
+      collection.push(`font-family: ${fontStack};`)
       collection.push(`}`)
     }
     if (typeof fontCollection.cssVariable === 'boolean' && fontCollection.cssVariable) {
-      collection.push(`:root{ --astro-font: '${fontCollection.name}', ${fallbackName}, ${fontCollection.fallback}; }`)
+      collection.push(`:root{ --astro-font: ${fontStack}; }`)
     } else if (typeof fontCollection.cssVariable === 'string' && fontCollection.cssVariable.length > 0) {
-      collection.push(
-        `:root{ --${fontCollection.cssVariable}: '${fontCollection.name}', ${fallbackName}, ${fontCollection.fallback}; }`,
-      )
+      collection.push(`:root{ --${fontCollection.cssVariable}: ${fontStack}; }`)
     }
   }
   return collection.join(' ')
