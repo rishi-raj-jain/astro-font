@@ -12,8 +12,8 @@
       "default": "./index.js"
     },
     "./utils": {
-      "types": "./dist/util.d.ts",
-      "default": "./dist/util.js"
+      "types": "./dist/utils.d.ts",
+      "default": "./dist/utils.js"
     },
     "./integration": {
       "types": "./dist/integration.d.ts",

@@ -7,7 +7,7 @@ import { pickFontFileForFallbackGeneration } from './fallback.ts'
 
 type GlobalValues = 'inherit' | 'initial' | 'revert' | 'revert-layer' | 'unset'
 
-interface Source {
+export interface Source {
   path: string
   preload?: boolean
   css?: Record<string, string>
@@ -42,7 +42,7 @@ interface Source {
     | (number & {})
 }
 
-interface Config {
+export interface Config {
   name: string
   src: Source[]
   fetch?: boolean
@@ -61,6 +61,19 @@ interface Config {
 
 export interface Props {
   config: Config[]
+}
+
+export interface FontFile {
+  path: string
+  url: string
+  data: ArrayBuffer
+  style?: string
+  weight?: string
+}
+
+export interface GetFontOptions {
+  weight?: string | number
+  style?: string
 }
 
 const extToPreload = {
@@ -133,6 +146,18 @@ async function getFontBuffer(path: string): Promise<Buffer | undefined> {
   if (fs && fs.existsSync(path)) {
     return fs.readFileSync(path)
   }
+}
+
+function bufferToArrayBuffer(buffer: Buffer): ArrayBuffer {
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
+}
+
+async function readResolvedFontFile(path: string): Promise<Buffer | undefined> {
+  const fs = await getFS()
+  if (!path.includes('https:') && !path.includes('http:')) {
+    if (fs?.existsSync(path)) return fs.readFileSync(path)
+  }
+  return getFontBuffer(path)
 }
 
 // Get everything after the last forward slash
@@ -274,6 +299,119 @@ export async function generateFonts(fontCollection: Config[]): Promise<Config[]>
     })
   }
   return duplicatedCollection
+}
+
+function normalizeWeight(weight?: string | number): string | undefined {
+  if (weight === undefined) return undefined
+  if (weight === 'normal') return '400'
+  if (weight === 'bold') return '700'
+  return String(weight)
+}
+
+function sourceMatchesOptions(src: Source, options?: GetFontOptions): boolean {
+  if (!options) return true
+  if (options.style && src.style !== options.style) return false
+  const targetWeight = normalizeWeight(options.weight)
+  if (!targetWeight || src.weight === undefined) return true
+  const sourceWeight = normalizeWeight(src.weight)
+  if (!sourceWeight) return false
+  if (sourceWeight.includes(' ')) {
+    const [min, max] = sourceWeight.split(/\s+/).map(Number)
+    const weight = Number(targetWeight)
+    return weight >= min && weight <= max
+  }
+  return sourceWeight === targetWeight
+}
+
+function pickDefaultSource(sources: Source[]): Source {
+  if (sources.length === 1) return sources[0]
+  const preferred = sources.find((src) => {
+    const weight = normalizeWeight(src.weight)
+    return weight === '400' && (!src.style || src.style === 'normal')
+  })
+  return preferred ?? sources[0]
+}
+
+async function resolveFontFamily(fontName: string, fontCollection: Config[]): Promise<Config> {
+  const configs = await generateFonts(fontCollection)
+  const config = configs.find((entry) => entry.name === fontName)
+  if (!config) throw new Error(`[astro-font] Font "${fontName}" not found in config`)
+  if (config.src.length === 0) {
+    throw new Error(`[astro-font] No font files resolved for "${fontName}"`)
+  }
+  return config
+}
+
+function getSourcesForOptions(config: Config, options?: GetFontOptions): Source[] {
+  if (!options) return config.src
+  const matched = config.src.filter((src) => sourceMatchesOptions(src, options))
+  if (matched.length === 0) {
+    throw new Error(`[astro-font] No font files match the provided options for "${config.name}"`)
+  }
+  return matched
+}
+
+export async function getFonts(
+  fontName: string,
+  fontCollection: Config[],
+  options?: GetFontOptions,
+): Promise<FontFile[]> {
+  const config = await resolveFontFamily(fontName, fontCollection)
+  const sources = getSourcesForOptions(config, options)
+  const basePath = getBasePath(config.basePath)
+  const files: FontFile[] = []
+
+  for (const src of sources) {
+    const buffer = await readResolvedFontFile(src.path)
+    if (!buffer) continue
+    files.push({
+      path: src.path,
+      url: getRelativePath(basePath, src.path),
+      data: bufferToArrayBuffer(buffer),
+      style: src.style,
+      weight: src.weight?.toString(),
+    })
+  }
+
+  if (files.length === 0) {
+    throw new Error(`[astro-font] No font files found for "${fontName}"`)
+  }
+
+  return files
+}
+
+export async function getFontData(
+  fontName: string,
+  fontCollection: Config[],
+  options?: GetFontOptions,
+): Promise<ArrayBuffer> {
+  const config = await resolveFontFamily(fontName, fontCollection)
+  const source = options ? getSourcesForOptions(config, options)[0] : pickDefaultSource(config.src)
+  const buffer = await readResolvedFontFile(source.path)
+  if (!buffer) {
+    throw new Error(`[astro-font] Could not read font file for "${fontName}"`)
+  }
+  return bufferToArrayBuffer(buffer)
+}
+
+export async function getFontURLs(
+  fontName: string,
+  fontCollection: Config[],
+  options?: GetFontOptions,
+): Promise<string[]> {
+  const config = await resolveFontFamily(fontName, fontCollection)
+  const sources = getSourcesForOptions(config, options)
+  const basePath = getBasePath(config.basePath)
+  return sources.map((src) => getRelativePath(basePath, src.path))
+}
+
+export async function getFontURL(
+  fontName: string,
+  fontCollection: Config[],
+  options?: GetFontOptions,
+): Promise<string> {
+  const urls = await getFontURLs(fontName, fontCollection, options)
+  return urls[0]
 }
 
 async function getFallbackFont(fontCollection: Config): Promise<Record<string, string>> {
