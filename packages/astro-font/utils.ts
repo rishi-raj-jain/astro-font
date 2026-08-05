@@ -226,20 +226,26 @@ export async function generateFonts(fontCollection: Config[]): Promise<Config[]>
   const duplicatedCollection = [...fontCollection]
   // Pre-operation to parse and insert google fonts in the src array
   await Promise.all(
-    duplicatedCollection.map((config) =>
-      config.googleFontsURL
-        ? fetch(config.googleFontsURL, {
-            headers: {
-              'User-Agent':
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-            },
-          })
-            .then((res) => res.text())
-            .then((res) => {
-              config.src = parseGoogleCSS(res)
-            })
-        : {},
-    ),
+    duplicatedCollection.map(async (config) => {
+      if (!config.googleFontsURL) return
+      try {
+        const res = await fetch(config.googleFontsURL, {
+          headers: {
+            'User-Agent':
+              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
+          },
+        })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        config.src = parseGoogleCSS(await res.text())
+      } catch (error) {
+        if (config.verbose) {
+          console.warn(
+            `[astro-font] Failed to fetch Google Fonts from ${config.googleFontsURL}, using fallback "${config.fallback}"`,
+          )
+          console.warn(error)
+        }
+      }
+    }),
   )
   const indicesMatrix: [number, number, string, string][] = []
   duplicatedCollection.forEach((config, i) => {
