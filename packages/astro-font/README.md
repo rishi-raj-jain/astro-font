@@ -261,6 +261,87 @@ import { join } from "node:path"
 />
 ```
 
+## CDN and `build.assetsPrefix`
+
+When fonts are served from a CDN or a non-root path (for example with [Astro's `build.assetsPrefix`](https://docs.astro.build/en/reference/configuration-reference/#buildassetsprefix)), pass an `assetsPrefix` so preload links and `@font-face` URLs point at the correct location.
+
+### Component-level prefix
+
+Applied to every font in `config` unless a font defines its own `assetsPrefix`:
+
+```astro
+---
+import { join } from 'node:path'
+import { AstroFont } from 'astro-font'
+
+const assetsPrefix = import.meta.env.PUBLIC_ASSETS_PREFIX ?? Astro.site?.toString()
+---
+
+<AstroFont
+  assetsPrefix={assetsPrefix}
+  config={[
+    {
+      name: 'Inter',
+      src: [
+        {
+          weight: '400',
+          style: 'normal',
+          path: join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf'),
+        },
+      ],
+      preload: true,
+      display: 'swap',
+      fallback: 'sans-serif',
+      cssVariable: 'font-inter',
+    },
+  ]}
+/>
+```
+
+With `assetsPrefix="https://cdn.example.com/assets"`, generated URLs look like:
+
+- Preload: `https://cdn.example.com/assets/fonts/Inter-Regular.ttf`
+- CSS: `src: url(https://cdn.example.com/assets/fonts/Inter-Regular.ttf)`
+
+Remote `http(s)` font paths are returned unchanged.
+
+### Per-font prefix
+
+Override the component prop for a single font:
+
+```astro
+<AstroFont
+  assetsPrefix="https://cdn.example.com/assets"
+  config={[
+    {
+      name: 'Inter',
+      assetsPrefix: 'https://fonts.cdn.example.com/v2',
+      src: [{ path: join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf'), style: 'normal', weight: '400' }],
+      fallback: 'sans-serif',
+      display: 'swap',
+    },
+  ]}
+/>
+```
+
+### Utility API
+
+Use `generatePublicUrl` from `astro-font/utils` when building custom endpoints (for example with Satori):
+
+```ts
+import { generatePublicUrl, getFontURLs } from 'astro-font/utils'
+
+const url = generatePublicUrl(
+  join(process.cwd(), 'public', 'fonts', 'Inter-Regular.ttf'),
+  './public',
+  'https://cdn.example.com/assets',
+)
+
+const urls = await getFontURLs('Inter', fontConfig)
+```
+
+See the demo page at `/assets-prefix` in this repository.
+
 ## Configuring Fallback Font Name
 
 The `fallbackName` attribute per config object can be used to configure the fallback font's family name (in CSS).
