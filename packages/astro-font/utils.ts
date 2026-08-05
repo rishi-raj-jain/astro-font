@@ -57,10 +57,13 @@ export interface Config {
   fallback: 'serif' | 'sans-serif' | 'monospace'
   // https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display
   display: 'auto' | 'block' | 'swap' | 'fallback' | 'optional' | (string & {})
+  /** Prefix for public font URLs (e.g. Astro build.assetsPrefix or a CDN origin) */
+  assetsPrefix?: string
 }
 
 export interface Props {
   config: Config[]
+  assetsPrefix?: string
 }
 
 export interface FontFile {
@@ -88,9 +91,30 @@ function getBasePath(src?: string) {
   return src || './public'
 }
 
-export function getRelativePath(from: string, to: string) {
-  if (to.includes('https:') || to.includes('http:')) return to
-  return '/' + relative(from, to)
+export function generatePublicUrl(localPath: string, basePath: string, assetsPrefix?: string): string {
+  if (localPath.includes('https:') || localPath.includes('http:')) return localPath
+
+  const pathRelativeToPublic = relative(basePath, localPath)
+  const normalizedRelative = pathRelativeToPublic.replace(/^\/+/, '')
+
+  if (!assetsPrefix) {
+    return '/' + normalizedRelative
+  }
+
+  const isAbsoluteUrl = assetsPrefix.includes('://')
+  const prefix = assetsPrefix.replace(/\/+$/, '')
+  if (isAbsoluteUrl) {
+    return `${prefix}/${normalizedRelative}`
+  }
+  return `${prefix}/${normalizedRelative}`
+}
+
+export function getRelativePath(from: string, to: string, assetsPrefix?: string) {
+  return generatePublicUrl(to, from, assetsPrefix)
+}
+
+function getPublicFontUrl(fontCollection: Config, localPath: string): string {
+  return generatePublicUrl(localPath, getBasePath(fontCollection.basePath), fontCollection.assetsPrefix)
 }
 
 // Check if file system can be accessed
@@ -378,7 +402,6 @@ export async function getFonts(
 ): Promise<FontFile[]> {
   const config = await resolveFontFamily(fontName, fontCollection)
   const sources = getSourcesForOptions(config, options)
-  const basePath = getBasePath(config.basePath)
   const files: FontFile[] = []
 
   for (const src of sources) {
@@ -386,7 +409,7 @@ export async function getFonts(
     if (!buffer) continue
     files.push({
       path: src.path,
-      url: getRelativePath(basePath, src.path),
+      url: getPublicFontUrl(config, src.path),
       data: bufferToArrayBuffer(buffer),
       style: src.style,
       weight: src.weight?.toString(),
@@ -421,8 +444,7 @@ export async function getFontURLs(
 ): Promise<string[]> {
   const config = await resolveFontFamily(fontName, fontCollection)
   const sources = getSourcesForOptions(config, options)
-  const basePath = getBasePath(config.basePath)
-  return sources.map((src) => getRelativePath(basePath, src.path))
+  return sources.map((src) => getPublicFontUrl(config, src.path))
 }
 
 export async function getFontURL(
@@ -513,16 +535,12 @@ async function getFallbackFont(fontCollection: Config): Promise<Record<string, s
 }
 
 export function createPreloads(fontCollection: Config): string[] {
-  // If the parent preload is set to be false, look for true only preload values
-  if (fontCollection.preload === false) {
-    return fontCollection.src
-      .filter((i) => i.preload === true)
-      .map((i) => getRelativePath(getBasePath(fontCollection.basePath), i.path))
-  }
-  // If the parent preload is set to be true (or not defined), look for non-false values
-  return fontCollection.src
-    .filter((i) => i.preload !== false)
-    .map((i) => getRelativePath(getBasePath(fontCollection.basePath), i.path))
+  const sourcesToPreload =
+    fontCollection.preload === false
+      ? fontCollection.src.filter((i) => i.preload === true)
+      : fontCollection.src.filter((i) => i.preload !== false)
+
+  return sourcesToPreload.map((i) => getPublicFontUrl(fontCollection, i.path))
 }
 
 export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
@@ -533,7 +551,7 @@ export async function createBaseCSS(fontCollection: Config): Promise<string[]> {
       if (i.style) cssProperties.push(`font-style: ${i.style}`)
       if (fontCollection.name) cssProperties.push(`font-family: '${fontCollection.name}'`)
       if (fontCollection.display) cssProperties.push(`font-display: ${fontCollection.display}`)
-      cssProperties.push(`src: url(${getRelativePath(getBasePath(fontCollection.basePath), i.path)})`)
+      cssProperties.push(`src: url(${getPublicFontUrl(fontCollection, i.path)})`)
       return `@font-face {${cssProperties.join(';')}}`
     })
     return tmp
