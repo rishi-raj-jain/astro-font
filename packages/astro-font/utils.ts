@@ -312,8 +312,8 @@ function sourceMatchesOptions(src: Source, options?: GetFontOptions): boolean {
   if (!options) return true
   if (options.style && src.style !== options.style) return false
   const targetWeight = normalizeWeight(options.weight)
-  if (!targetWeight || src.weight === undefined) return true
-  const sourceWeight = normalizeWeight(src.weight)
+  if (!targetWeight) return true
+  const sourceWeight = normalizeWeight(src.weight ?? 'normal')
   if (!sourceWeight) return false
   if (sourceWeight.includes(' ')) {
     const [min, max] = sourceWeight.split(/\s+/).map(Number)
@@ -326,14 +326,34 @@ function sourceMatchesOptions(src: Source, options?: GetFontOptions): boolean {
 function pickDefaultSource(sources: Source[]): Source {
   if (sources.length === 1) return sources[0]
   const preferred = sources.find((src) => {
-    const weight = normalizeWeight(src.weight)
+    const weight = normalizeWeight(src.weight ?? 'normal')
     return weight === '400' && (!src.style || src.style === 'normal')
   })
   return preferred ?? sources[0]
 }
 
+const resolvedConfigCache = new Map<string, Promise<Config[]>>()
+
+function getResolvedConfigCacheKey(fontCollection: Config[]): string {
+  return String(simpleHash(JSON.stringify(fontCollection)))
+}
+
+export function resolveFonts(fontCollection: Config[]): Promise<Config[]> {
+  const cacheKey = getResolvedConfigCacheKey(fontCollection)
+  let cached = resolvedConfigCache.get(cacheKey)
+  if (!cached) {
+    cached = generateFonts(fontCollection)
+    resolvedConfigCache.set(cacheKey, cached)
+  }
+  return cached
+}
+
+export function clearResolvedFontsCache(): void {
+  resolvedConfigCache.clear()
+}
+
 async function resolveFontFamily(fontName: string, fontCollection: Config[]): Promise<Config> {
-  const configs = await generateFonts(fontCollection)
+  const configs = await resolveFonts(fontCollection)
   const config = configs.find((entry) => entry.name === fontName)
   if (!config) throw new Error(`[astro-font] Font "${fontName}" not found in config`)
   if (config.src.length === 0) {
